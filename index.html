@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Pixel Quest — First Build</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#10151b; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; touch-action:none; }
+  #gameWrap { position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#10151b; }
+  canvas { display:block; width:100%; height:100%; object-fit:contain; image-rendering:pixelated; }
+  .hud { position:absolute; top:10px; left:10px; right:10px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px; pointer-events:none; }
+  .panel { color:#fff6d5; background:rgba(22,29,34,.88); border:3px solid #d5b56c; box-shadow:0 3px 0 #66462e; padding:7px 9px; font-size:11px; line-height:1.5; text-shadow:1px 1px #000; }
+  .brand { font-size:13px; color:#ffe68b; font-weight:bold; }
+  .bar { width:110px; height:8px; border:2px solid #eee1b0; background:#432d31; margin-top:2px; }
+  .fill { height:100%; width:100%; background:#e94b56; }
+  #manaFill { background:#4c9df0; }
+  #hint { position:absolute; top:82px; left:50%; transform:translateX(-50%); text-align:center; max-width:90%; white-space:normal; }
+  .controls { position:absolute; left:16px; bottom:18px; width:142px; height:126px; pointer-events:auto; }
+  .dpad { position:relative; width:142px; height:126px; }
+  .btn { border:2px solid #e7d19a; background:rgba(38,48,53,.88); color:#fff4c7; border-radius:8px; box-shadow:0 4px 0 #60472e; font: bold 20px monospace; touch-action:none; user-select:none; }
+  .dpad .btn { position:absolute; width:44px; height:40px; }
+  #up { top:0; left:49px; } #down { bottom:0; left:49px; } #left { left:0; top:43px; } #right { right:0; top:43px; }
+  .actions { position:absolute; right:16px; bottom:22px; display:flex; gap:10px; align-items:flex-end; pointer-events:auto; }
+  .action { width:58px; height:58px; border-radius:50%; font-size:12px; }
+  #attack { background:rgba(172,54,57,.92); } #magic { background:rgba(45,91,171,.92); width:50px; height:50px; }
+  #toast { position:absolute; left:50%; bottom:160px; transform:translateX(-50%); color:#fff5ca; background:rgba(19,25,29,.9); border:2px solid #d5b56c; padding:8px 12px; font-size:12px; text-align:center; max-width:85%; display:none; }
+  #startScreen { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(9,14,18,.82); padding:20px; }
+  .startCard { max-width:360px; width:100%; text-align:center; color:#fff3c6; background:#263238; border:4px solid #d5b56c; box-shadow:0 7px 0 #65472e; padding:22px 18px; }
+  .startCard h1 { color:#ffe47d; font-size:24px; margin:0 0 8px; }
+  .startCard p { font-size:12px; line-height:1.7; }
+  #startBtn { padding:12px 24px; margin-top:8px; font-size:14px; }
+  @media (min-width:700px) { .panel { font-size:13px; } .controls { transform:scale(1.15); transform-origin:bottom left; } .actions { transform:scale(1.1); transform-origin:bottom right; } }
+</style>
+</head>
+<body>
+<div id="gameWrap">
+  <canvas id="game" width="480" height="270" aria-label="Pixel Quest game"></canvas>
+  <div class="hud">
+    <div class="panel"><div class="brand">PIXEL QUEST</div><div id="levelText">LV 1 · EXP 0/20</div><div>HP <span id="hpText">100/100</span><div class="bar"><div class="fill" id="hpFill"></div></div></div><div>MP <span id="mpText">40/40</span><div class="bar"><div class="fill" id="manaFill"></div></div></div></div>
+    <div class="panel" style="text-align:right"><div>🪙 <span id="goldText">0</span> GOLD</div><div id="zoneText">GREENMEADOW</div><div id="enemyText">Slimes defeated: 0</div></div>
+  </div>
+  <div class="panel" id="hint">Explore the village · Move with the D-pad</div>
+  <div class="controls"><div class="dpad">
+    <button class="btn" id="up" aria-label="Move up">▲</button><button class="btn" id="left" aria-label="Move left">◀</button><button class="btn" id="right" aria-label="Move right">▶</button><button class="btn" id="down" aria-label="Move down">▼</button>
+  </div></div>
+  <div class="actions"><button class="btn action" id="magic">MAGIC</button><button class="btn action" id="attack">ATTACK</button></div>
+  <div id="toast"></div>
+  <div id="startScreen"><div class="startCard"><h1>PIXEL QUEST</h1><div style="color:#9be86b">FIRST BUILD · 0.1</div><p>A tiny 8-bit adventure begins.<br>Explore Greenmeadow, battle slimes and collect gold.</p><p><b>Move:</b> D-pad or WASD / arrow keys<br><b>Attack:</b> Space · <b>Magic:</b> E</p><button class="btn" id="startBtn">START ADVENTURE</button></div></div>
+</div>
+<script>
+(() => {
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+const W=480,H=270, worldW=960, worldH=640;
+const keys = new Set();
+const held = {up:false,down:false,left:false,right:false};
+let started=false, last=0, toastTimer=0, slimesDefeated=0;
+const player={x:470,y:335,w:12,h:16,speed:95,hp:100,maxHp:100,mp:40,maxMp:40,level:1,exp:0,gold:0,face:'down',attackCd:0,magicCd:0,invuln:0};
+const slimes=[
+ {x:310,y:240,hp:20,maxHp:20,alive:true,phase:0},{x:640,y:365,hp:20,maxHp:20,alive:true,phase:1},
+ {x:790,y:220,hp:20,maxHp:20,alive:true,phase:2},{x:230,y:490,hp:20,maxHp:20,alive:true,phase:3},
+ {x:700,y:520,hp:20,maxHp:20,alive:true,phase:4}
+];
+const obstacles=[
+ {x:350,y:120,w:94,h:66,type:'house'},{x:95,y:300,w:92,h:66,type:'house'},
+ {x:650,y:130,w:100,h:70,type:'house'},{x:795,y:370,w:100,h:72,type:'house'},
+ {x:410,y:445,w:95,h:66,type:'house'},
+ {x:245,y:125,w:48,h:30,type:'tree'},{x:520,y:120,w:50,h:35,type:'tree'},
+ {x:575,y:460,w:54,h:38,type:'tree'},{x:150,y:450,w:52,h:36,type:'tree'},
+ {x:840,y:110,w:50,h:35,type:'tree'},{x:290,y:385,w:42,h:30,type:'tree'}
+];
+function rnd(n){return Math.abs(Math.sin(n*127.1+311.7)*43758.5453)%1}
+function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h)}
+function text(t,x,y,c='#fff'){ctx.fillStyle=c;ctx.font='8px monospace';ctx.fillText(t,x,y)}
+function drawGround(camX,camY){
+ rect(0,0,W,H,'#6fbd43');
+ // subtle pixel grass patches
+ for(let y=Math.floor(camY/16)*16;y<camY+H+16;y+=16) for(let x=Math.floor(camX/16)*16;x<camX+W+16;x+=16){
+   const r=rnd(x*3+y*7);
+   if(r>.65){rect(x-camX+Math.floor(r*8),y-camY+Math.floor(r*6),2,2,'#91d85b');}
+   if(r<.12){rect(x-camX+5,y-camY+10,3,2,'#4e9d3c');}
+ }
+ // paths
+ rect(0,270-camY,worldW,30,'#c4a365'); rect(430-camX,0,34,worldH,'#c4a365');
+ for(let x=0;x<worldW;x+=16) {rect(x-camX,282-camY,8,2,'#d9bd7a');}
+ for(let y=0;y<worldH;y+=16) {rect(444-camX,y-camY,2,8,'#d9bd7a');}
+ // pond
+ rect(190-camX,500-camY,80,48,'#286fbd'); rect(196-camX,504-camY,68,38,'#3d9ee4');
+ for(let i=0;i<7;i++) rect(202+i*8-camX,510+(i%3)*9-camY,5,2,'#83d8ef');
+ // flower dots
+ for(let i=0;i<35;i++){let x=(i*83+47)%worldW,y=(i*61+55)%worldH;if(!inHouse(x,y)){rect(x-camX,y-camY,2,2,i%2?'#ffe779':'#f8f2da');}}
+}
+function inHouse(x,y){return obstacles.some(o=>o.type==='house'&&x>o.x-5&&x<o.x+o.w+5&&y>o.y-5&&y<o.y+o.h+5)}
+function drawTree(o,cx,cy){
+ let x=o.x-cx,y=o.y-cy;
+ rect(x+9,y+19,13,17,'#76502f');rect(x+2,y+8,29,20,'#287b3b');rect(x+5,y+2,26,19,'#3a9a43');rect(x+9,y,18,13,'#64c94d');rect(x+6,y+5,6,5,'#8be05c');rect(x+24,y+11,5,5,'#2c873a');
+}
+function drawHouse(o,cx,cy){
+ let x=o.x-cx,y=o.y-cy;
+ // shadow, walls and red tiled roof
+ rect(x+4,y+18,o.w-3,o.h-10,'#7b4a31');rect(x+8,y+22,o.w-11,o.h-16,'#f2c66e');
+ rect(x,y+5,o.w,27,'#a62f45');rect(x+4,y+2,o.w-8,7,'#f5d7a0');
+ for(let yy=10;yy<29;yy+=7){rect(x+3,y+yy,o.w-6,3,yy%2?'#e84e61':'#d83a50');for(let xx=8;xx<o.w;xx+=18)rect(x+xx,y+yy,2,3,'#ff8990');}
+ rect(x+o.w/2-10,y+34,20,25,'#b87539');rect(x+o.w/2-8,y+36,16,23,'#f7c94e');rect(x+o.w/2-5,y+40,10,17,'#8b552d');
+ rect(x+4,y+31,5,7,'#f5d66b');rect(x+o.w-9,y+31,5,7,'#f5d66b');
+}
+function drawPlayer(x,y){
+ // shadow
+ rect(x-3,y+11,18,4,'#4c8737');
+ // tiny adventurer
+ rect(x+2,y+1,8,7,'#e8b77a');rect(x+1,y,10,4,'#8b4c2d');rect(x+2,y+3,2,2,'#252b37');rect(x+8,y+3,2,2,'#252b37');
+ rect(x+1,y+8,10,6,'#2d75c8');rect(x+3,y+8,6,2,'#74c8f1');rect(x+1,y+14,3,3,'#533b32');rect(x+8,y+14,3,3,'#533b32');
+ if(player.face==='right')rect(x+11,y+9,3,2,'#e8b77a');
+ if(player.face==='left')rect(x-2,y+9,3,2,'#e8b77a');
+}
+function drawSlime(s,cx,cy){
+ if(!s.alive)return;
+ let x=Math.round(s.x-cx),y=Math.round(s.y-cy+Math.sin(performance.now()/260+s.phase)*1.5);
+ rect(x-1,y+7,18,4,'#3d8a3d');rect(x+1,y+2,14,8,'#238b55');rect(x+3,y,10,7,'#4be08a');rect(x+4,y+1,3,2,'#a8ffd0');rect(x+4,y+4,2,2,'#163b3b');rect(x+11,y+4,2,2,'#163b3b');
+ if(s.hp<s.maxHp){rect(x,y-5,16,3,'#392d35');rect(x,y-5,Math.max(1,16*s.hp/s.maxHp),3,'#f05252');}
+}
+function collides(x,y){
+ const r={x:x+1,y:y+3,w:10,h:12};
+ return obstacles.some(o=>r.x<o.x+o.w-3&&r.x+r.w>o.x+3&&r.y<o.y+o.h-2&&r.y+r.h>o.y+o.h*.35);
+}
+function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.style.display='block';toastTimer=2.2;}
+function updateHud(){
+ document.getElementById('hpText').textContent=`${Math.max(0,Math.ceil(player.hp))}/${player.maxHp}`;
+ document.getElementById('mpText').textContent=`${Math.ceil(player.mp)}/${player.maxMp}`;
+ document.getElementById('hpFill').style.width=`${100*player.hp/player.maxHp}%`;
+ document.getElementById('manaFill').style.width=`${100*player.mp/player.maxMp}%`;
+ document.getElementById('levelText').textContent=`LV ${player.level} · EXP ${player.exp}/${player.level*20}`;
+ document.getElementById('goldText').textContent=player.gold;
+ document.getElementById('enemyText').textContent=`Slimes defeated: ${slimesDefeated}`;
+}
+function nearestEnemy(range=35){
+ let best=null,dist=range;
+ for(const s of slimes){if(!s.alive)continue;let d=Math.hypot(s.x-player.x,s.y-player.y);if(d<dist){best=s;dist=d;}}
+ return best;
+}
+function attack(){
+ if(!started||player.attackCd>0)return;
+ player.attackCd=.35;
+ let s=nearestEnemy(34);
+ if(s){s.hp-=12+player.level*2;showToast('Hit! Slime takes damage.');if(s.hp<=0){s.alive=false;slimesDefeated++;player.gold+=3;player.exp+=10;showToast('Slime defeated! +3 gold · +10 EXP');if(player.exp>=player.level*20){player.exp-=player.level*20;player.level++;player.maxHp+=10;player.hp=player.maxHp;player.maxMp+=5;player.mp=player.maxMp;showToast('LEVEL UP! Your stats increased!');}}}
+ else showToast('No enemy nearby. Get closer!');
+ updateHud();
+}
+function magic(){
+ if(!started||player.magicCd>0)return;
+ if(player.mp<10){showToast('Not enough mana!');return;}
+ player.mp-=10;player.magicCd=.7;
+ let s=nearestEnemy(78);
+ if(s){s.hp-=22+player.level*3;showToast('✨ Firebolt! Slime takes magic damage.');if(s.hp<=0){s.alive=false;slimesDefeated++;player.gold+=3;player.exp+=10;showToast('Slime defeated! +3 gold · +10 EXP');if(player.exp>=player.level*20){player.exp-=player.level*20;player.level++;player.maxHp+=10;player.hp=player.maxHp;player.maxMp+=5;player.mp=player.maxMp;showToast('LEVEL UP! Your stats increased!');}}}
+ else showToast('Firebolt fired! No slime in range.');
+ updateHud();
+}
+function draw(){
+ let camX=Math.max(0,Math.min(worldW-W,player.x-W/2)),camY=Math.max(0,Math.min(worldH-H,player.y-H/2));
+ drawGround(camX,camY);
+ for(const o of obstacles.filter(o=>o.type==='tree'))drawTree(o,camX,camY);
+ for(const o of obstacles.filter(o=>o.type==='house'))drawHouse(o,camX,camY);
+ // tiny NPCs
+ [[390,320],[570,300],[520,550]].forEach(([x,y],i)=>{let px=x-camX,py=y-camY;rect(px+2,py,7,6,'#e0a46c');rect(px+1,py,9,3,'#a85c32');rect(px+1,py+6,9,7,i===0?'#c34c7b':'#e0b64b');rect(px+2,py+13,3,3,'#563d32');rect(px+7,py+13,3,3,'#563d32');});
+ for(const s of slimes)drawSlime(s,camX,camY);
+ drawPlayer(Math.round(player.x-camX),Math.round(player.y-camY));
+ // foreground mini minimap
+ rect(W-66,H-43,56,33,'rgba(18,27,31,.85)');rect(W-63,H-40,50,27,'#6fbd43');
+ for(const o of obstacles.filter(o=>o.type==='house'))rect(W-63+o.x/worldW*50,H-40+o.y/worldH*27,4,3,'#d74455');
+ rect(W-63+player.x/worldW*50,H-40+player.y/worldH*27,3,3,'#fff2a1');
+ if(player.hp<=0){rect(0,0,W,H,'rgba(0,0,0,.7)');text('YOU FAINTED!',196,125,'#ff7777');text('Press ENTER to restart',174,141,'#fff2c0');}
+}
+function tick(t){
+ let dt=Math.min(.04,(t-last)/1000||0);last=t;
+ if(started&&player.hp>0){
+  let dx=0,dy=0;
+  if(held.left||keys.has('ArrowLeft')||keys.has('a'))dx--;
+  if(held.right||keys.has('ArrowRight')||keys.has('d'))dx++;
+  if(held.up||keys.has('ArrowUp')||keys.has('w'))dy--;
+  if(held.down||keys.has('ArrowDown')||keys.has('s'))dy++;
+  if(dx||dy){let mag=Math.hypot(dx,dy);dx/=mag;dy/=mag;if(Math.abs(dx)>Math.abs(dy))player.face=dx>0?'right':'left';else player.face=dy>0?'down':'up';
+   let nx=Math.max(8,Math.min(worldW-20,player.x+dx*player.speed*dt)),ny=Math.max(8,Math.min(worldH-20,player.y+dy*player.speed*dt));
+   if(!collides(nx,player.y))player.x=nx;if(!collides(player.x,ny))player.y=ny;
+  }
+  player.attackCd=Math.max(0,player.attackCd-dt);player.magicCd=Math.max(0,player.magicCd-dt);player.invuln=Math.max(0,player.invuln-dt);
+  player.mp=Math.min(player.maxMp,player.mp+dt*1.2);
+  for(const s of slimes){if(!s.alive)continue;let d=Math.hypot(player.x-s.x,player.y-s.y);if(d<95){let dx=player.x-s.x,dy=player.y-s.y,m=Math.hypot(dx,dy)||1;let nx=s.x+dx/m*22*dt,ny=s.y+dy/m*22*dt;if(!collides(nx,ny)){s.x=nx;s.y=ny;}if(d<17&&player.invuln<=0){player.hp-=8;player.invuln=.9;showToast('Ouch! A slime hit you.');updateHud();}}
+  }
+ }
+ if(toastTimer>0){toastTimer-=dt;if(toastTimer<=0)document.getElementById('toast').style.display='none';}
+ draw();requestAnimationFrame(tick);
+}
+document.getElementById('startBtn').addEventListener('click',()=>{started=true;document.getElementById('startScreen').style.display='none';showToast('Welcome to Greenmeadow! Find a slime.');});
+for(const dir of Object.keys(held)){const el=document.getElementById(dir);el.addEventListener('pointerdown',e=>{e.preventDefault();held[dir]=true;el.setPointerCapture?.(e.pointerId);});['pointerup','pointercancel','pointerleave'].forEach(ev=>el.addEventListener(ev,e=>{held[dir]=false;}));}
+document.getElementById('attack').addEventListener('pointerdown',e=>{e.preventDefault();attack();});
+document.getElementById('magic').addEventListener('pointerdown',e=>{e.preventDefault();magic();});
+window.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' ','e','Enter'].includes(e.key))e.preventDefault();keys.add(e.key);if(e.key===' ')attack();if(e.key.toLowerCase()==='e')magic();if(e.key==='Enter'&&player.hp<=0){player.hp=player.maxHp;player.mp=player.maxMp;player.x=470;player.y=335;slimes.forEach(s=>{s.alive=true;s.hp=s.maxHp});started=true;showToast('You are back in the adventure!');updateHud();}});
+window.addEventListener('keyup',e=>keys.delete(e.key));
+window.addEventListener('blur',()=>{keys.clear();Object.keys(held).forEach(k=>held[k]=false);});
+updateHud();requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
