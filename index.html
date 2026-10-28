@@ -4,280 +4,116 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#101820">
-<title>Pixel Quest — Emberfall</title>
+<title>Pixel Quest: Emberfall</title>
 <style>
-:root{--ink:#17242c;--panel:#1b2b35;--panel2:#233944;--gold:#f6cf72;--mint:#86e0ba;--red:#ff7b79;--blue:#8dc9ff;--line:#45616b}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#101820;color:#eef5e9;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;overflow:hidden}
-button{font:inherit;color:inherit;border:2px solid #58717a;background:#263b44;padding:9px 12px;cursor:pointer;box-shadow:0 3px 0 #101820;image-rendering:pixelated}button:hover{filter:brightness(1.18)}button:active{transform:translateY(2px);box-shadow:0 1px 0 #101820}button:disabled{opacity:.4;cursor:not-allowed}
-#app{height:100%;display:flex;flex-direction:column;max-width:1400px;margin:auto;padding:10px;gap:8px}
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;background:linear-gradient(90deg,#243c43,#192a33);border:2px solid var(--line);box-shadow:0 4px 0 #0b1217;min-height:54px}
-.brand{font-weight:1000;letter-spacing:2px;color:var(--gold);font-size:clamp(15px,2vw,22px)}.brand small{display:block;font-size:9px;letter-spacing:3px;color:#9db7b6;margin-top:3px}
-.topstats{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end;font-size:12px;color:#d8e5d8}.topstats b{color:var(--gold)}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 245px;gap:8px;min-height:0;flex:1}
-.gamebox{position:relative;min-height:0;background:#172b2b;border:3px solid #526d6d;box-shadow:0 5px 0 #0b1217;overflow:hidden}
-canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-action:none}
-.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#0c1719d9;padding:16px;z-index:5}
-.card{width:min(610px,100%);max-height:95%;overflow:auto;background:#1b2c35;border:3px solid #67818a;box-shadow:0 8px 0 #080e12;padding:22px}
-.card h1,.card h2{margin:0 0 8px;color:var(--gold);letter-spacing:1px}.card p{color:#c3d4d0;line-height:1.5;font-size:13px}.classgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin:14px 0}.classbtn{min-width:0;padding:10px 4px;font-size:11px}.classbtn strong{display:block;font-size:12px;color:var(--gold);margin:5px 0}.classbtn span{display:block;font-size:9px;color:#c0d3d0;line-height:1.35}.primary{background:#6c5730;border-color:#d2ad5c;color:#fff2c4}
-.sidebar{display:flex;flex-direction:column;gap:8px;min-height:0}.panel{background:var(--panel);border:2px solid var(--line);box-shadow:0 4px 0 #0b1217;padding:10px}.panel h3{font-size:12px;color:var(--gold);margin:0 0 9px;letter-spacing:1px}.barrow{display:flex;justify-content:space-between;font-size:10px;margin:7px 0 4px;color:#d1dfd8}.bar{height:8px;background:#0c171d;border:1px solid #3f5962}.bar i{display:block;height:100%;width:50%;transition:width .15s}.hp i{background:#e76d70}.mp i{background:#69b8ed}.xp i{background:#e8c45e}
-#questText{font-size:11px;line-height:1.55;color:#c6d8d0}.questtitle{color:var(--mint);font-weight:bold;margin-bottom:4px}.log{font-size:10px;line-height:1.45;color:#b5c8c4;overflow:auto;max-height:110px}.log div{padding:2px 0;border-bottom:1px solid #2b4149}
-.quickrow{display:flex;gap:6px;flex-wrap:wrap}.quickrow button{font-size:10px;padding:7px}.bottom{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:10px;color:#9db4b2;padding:2px 3px}
-/* Touch HUD inspired by the supplied 16:9 controller concept */
-.mobilecontrols{display:none;position:absolute;inset:0;z-index:3;pointer-events:none;justify-content:space-between;align-items:flex-end;padding:12px 10px}
-.dpad{display:grid;grid-template-columns:clamp(42px,10vw,62px) clamp(42px,10vw,62px) clamp(42px,10vw,62px);grid-template-rows:clamp(42px,10vw,62px) clamp(42px,10vw,62px) clamp(42px,10vw,62px);gap:4px;pointer-events:auto;align-items:center;justify-items:center;filter:drop-shadow(0 3px 0 #07121b)}
-.dpad button,.actions button{padding:0;min-height:0;touch-action:none;user-select:none;-webkit-user-select:none;border:2px solid #8adfff;background:linear-gradient(145deg,#294d61,#132a3a 65%,#0c1b29);box-shadow:inset 0 0 0 2px #315b70,0 3px 0 #061018;color:#efffea}
-.dpad button{width:100%;height:100%;font-size:clamp(22px,5vw,32px);border-radius:13px;display:flex;align-items:center;justify-content:center}
-.dpad .up{grid-column:2;grid-row:1}.dpad .left{grid-column:1;grid-row:2}.dpad .down{grid-column:2;grid-row:3}.dpad .right{grid-column:3;grid-row:2}
-.actions{display:grid;grid-template-columns:repeat(3,clamp(54px,12vw,78px));grid-template-rows:auto auto;gap:8px;align-items:end;justify-items:center;pointer-events:auto}
-.actions button{border-radius:14px;width:100%;min-height:58px;font-size:10px;letter-spacing:.4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
-.actions button .ico{font-size:clamp(20px,4.8vw,30px);line-height:1}.actions button .lbl{font-size:clamp(8px,2vw,11px)}
-.actions [data-action="inventory"]{grid-column:1;grid-row:1}.actions [data-action="quest"]{grid-column:2;grid-row:1}.actions [data-action="interact"]{grid-column:3;grid-row:1}.actions [data-action="special"]{grid-column:1;grid-row:2;border-radius:50%;min-height:clamp(62px,14vw,86px);background:radial-gradient(circle at 35% 25%,#215d92,#10253e 70%);border-color:#64cfff}.actions [data-action="attack"]{grid-column:2;grid-row:2;border-radius:50%;min-height:clamp(72px,16vw,98px);background:radial-gradient(circle at 35% 25%,#1d5f9b,#10233f 70%);border-color:#80ddff}.actions [data-action="use"]{grid-column:3;grid-row:2;border-radius:50%;min-height:clamp(62px,14vw,86px);background:radial-gradient(circle at 35% 25%,#8b2942,#351526 70%);border-color:#ff9bb0}
-.dpad button:active,.actions button:active{filter:brightness(1.5);transform:scale(.96)}
-#toast{position:absolute;left:50%;top:14px;transform:translateX(-50%);background:#14272ddd;border:2px solid #8ba9a0;padding:8px 12px;font-size:11px;z-index:4;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap}
-#interactHint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:#172b32dd;padding:6px 9px;border:1px solid #67818a;font-size:10px;display:none}
-@media(max-width:800px){#app{padding:5px;gap:5px}.layout{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}.sidebar{display:grid;grid-template-columns:1fr 1fr;gap:5px}.panel{padding:7px}.panel h3{margin-bottom:5px}.log{max-height:55px}.gamebox{min-height:250px}.topbar{padding:6px 8px;min-height:45px}.topstats{gap:7px;font-size:10px}.mobilecontrols{display:flex}.bottom{font-size:9px}.classgrid{grid-template-columns:repeat(2,1fr)}.classgrid .classbtn:last-child{grid-column:span 2}}
-@media(min-width:801px){.gamebox{min-height:360px}}
+:root{--ink:#101a22;--panel:#1a2a34;--panel2:#263d48;--line:#54727b;--gold:#f6d37d;--mint:#8be0b6;--red:#ff777d;--blue:#78cfff}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101820;color:#eef6e9;font-family:ui-monospace,Consolas,monospace}button{font:inherit;color:inherit;background:linear-gradient(#2c4854,#172c38);border:2px solid #6b929b;padding:8px;box-shadow:0 3px 0 #091117;cursor:pointer;touch-action:manipulation}button:active{transform:translateY(2px);box-shadow:0 1px 0 #091117}button:disabled{opacity:.4}#app{height:100dvh;max-width:1500px;margin:auto;padding:8px;display:flex;flex-direction:column;gap:7px}.top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 11px;background:linear-gradient(90deg,#29444b,#182a34);border:2px solid var(--line);min-height:44px}.brand{font-weight:1000;color:var(--gold);letter-spacing:2px;font-size:clamp(14px,2vw,22px)}.brand small{display:block;color:#a8c4bc;font-size:8px;letter-spacing:3px;margin-top:2px}.stats{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;font-size:11px}.stats b{color:var(--gold)}.layout{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:7px;flex:1;min-height:0}.gamebox{position:relative;min-height:0;overflow:hidden;border:3px solid #54736f;background:#19382e;box-shadow:0 4px 0 #080e12}canvas{display:block;width:100%;height:100%;image-rendering:pixelated;touch-action:none}.side{display:flex;flex-direction:column;gap:7px;min-height:0}.panel{background:var(--panel);border:2px solid var(--line);padding:9px;box-shadow:0 3px 0 #080e12}.panel h3{font-size:11px;color:var(--gold);letter-spacing:1px;margin:0 0 7px}.barrow{display:flex;justify-content:space-between;font-size:10px;margin:6px 0 3px;color:#d4e4d9}.bar{height:8px;background:#0b171d;border:1px solid #3c5962}.bar i{display:block;height:100%;transition:width .12s}.hp i{background:#ee7075}.mp i{background:#69bdf1}.xp i{background:#f0cb67}.quest{font-size:10px;line-height:1.5;color:#c9ddd1}.quest b{color:var(--mint)}.log{font-size:9px;line-height:1.45;overflow:auto;max-height:105px;color:#a9c4bd}.log div{padding:2px 0;border-bottom:1px solid #2b444c}.row{display:flex;gap:5px;flex-wrap:wrap}.row button{font-size:9px;padding:6px;flex:1}.bottom{font-size:9px;color:#a0b8b2;display:flex;justify-content:space-between;padding:2px}.overlay{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:#09151bdc;padding:14px}.card{width:min(650px,100%);max-height:96%;overflow:auto;background:#1b2d36;border:3px solid #718e91;box-shadow:0 7px 0 #070d11;padding:clamp(12px,3vw,22px)}.card h1,.card h2{color:var(--gold);margin:0 0 8px}.card p{font-size:12px;color:#c4d7d0;line-height:1.5}.classes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:12px 0}.classes button{font-size:10px;min-width:0;padding:8px 3px}.classes strong{display:block;color:var(--gold);margin:5px 0}.classes span{font-size:9px;line-height:1.3;display:block;color:#bdd0c9}.primary{background:linear-gradient(#876b39,#584321);border-color:#e2c373}.mobilecontrols{display:none;position:absolute;inset:0;z-index:3;pointer-events:none;justify-content:space-between;align-items:flex-end;padding:10px}.dpad{display:grid;grid-template-columns:clamp(39px,8vw,62px) clamp(39px,8vw,62px) clamp(39px,8vw,62px);grid-template-rows:clamp(39px,8vw,62px) clamp(39px,8vw,62px) clamp(39px,8vw,62px);gap:3px;pointer-events:auto}.dpad button,.actions button{padding:0;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:12px;background:linear-gradient(145deg,#315a6b,#102533);border-color:#83d8ef;box-shadow:inset 0 0 0 2px #31566a,0 3px 0 #061018}.dpad button{font-size:clamp(20px,4vw,30px)}.dpad .up{grid-column:2;grid-row:1}.dpad .left{grid-column:1;grid-row:2}.dpad .down{grid-column:2;grid-row:3}.dpad .right{grid-column:3;grid-row:2}.actions{display:grid;grid-template-columns:repeat(3,clamp(46px,8vw,70px));grid-template-rows:auto auto;gap:5px;pointer-events:auto;align-items:end}.actions button{min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px}.actions .ico{font-size:19px}.actions .lbl{font-size:8px;letter-spacing:.4px}.actions [data-a=special]{border-color:#a7c8ff;background:linear-gradient(145deg,#455ba4,#172544)}.actions [data-a=attack]{border-color:#ffe18c;background:linear-gradient(145deg,#95643b,#3e241c);min-height:59px}.actions [data-a=potion]{border-color:#ff9eae;background:linear-gradient(145deg,#8b3f54,#351a2a)}#toast{position:absolute;z-index:4;left:50%;top:12%;transform:translateX(-50%);padding:7px 12px;background:#101f27e8;border:2px solid #6c9095;color:#f7e6a7;font-size:11px;opacity:0;pointer-events:none;white-space:nowrap}.skillbadge{position:absolute;z-index:2;top:8px;right:8px;padding:5px 8px;background:#10232bdc;border:1px solid #547783;font-size:10px;color:#d6f3ff;pointer-events:none}
+@media(max-width:760px){#app{padding:4px;gap:4px}.top{min-height:34px;padding:4px 7px}.brand small{display:none}.stats{font-size:9px;gap:6px}.layout{display:block}.side{display:none}.bottom{font-size:8px}.mobilecontrols{display:flex}.gamebox{height:100%;border-width:2px}.classes{grid-template-columns:repeat(3,minmax(0,1fr))}.card{padding:12px}.card p{font-size:11px}}
+@media(orientation:portrait) and (max-width:760px){.top{min-height:30px}.brand{font-size:12px}.stats{font-size:8px} .mobilecontrols{padding:5px}.dpad{grid-template-columns:36px 36px 36px;grid-template-rows:36px 36px 36px}.actions{grid-template-columns:repeat(3,42px);gap:3px}.actions button{min-height:40px}.actions .ico{font-size:15px}.actions .lbl{font-size:7px}}
 </style>
 </head>
-<body>
-<div id="app">
- <header class="topbar"><div class="brand">PIXEL QUEST <small>EMBERFALL CHRONICLES · DEMO 0.2</small></div><div class="topstats"><span>LV <b id="levelTop">1</b></span><span>GOLD <b id="goldTop">12</b></span><span>CLASS <b id="classTop">—</b></span></div></header>
- <main class="layout">
-  <section class="gamebox"><canvas id="game" width="640" height="400" aria-label="Pixel Quest game world"></canvas>
-   <div class="mobilecontrols"><div class="dpad"><button class="up" data-move="up">▲</button><button class="left" data-move="left">◀</button><button class="down" data-move="down">▼</button><button class="right" data-move="right">▶</button></div><div class="actions"><button data-action="inventory"><span class="ico">🎒</span><span class="lbl">BAG</span></button><button data-action="quest"><span class="ico">📜</span><span class="lbl">QUEST</span></button><button data-action="interact"><span class="ico">💬</span><span class="lbl">TALK</span></button><button data-action="special"><span class="ico">✦</span><span class="lbl">SKILL</span></button><button data-action="attack"><span class="ico">⚔</span><span class="lbl">ATTACK</span></button><button data-action="use"><span class="ico">🧪</span><span class="lbl">USE</span></button></div></div><div id="toast"></div><div id="interactHint">E · TALK / INTERACT</div>
-   <div class="overlay" id="startOverlay"><div class="card">
-    <h1>EMBERFALL</h1><p>A little kingdom is losing its light. Explore the village, help its keeper, defeat slimes, and begin a proper RPG adventure.</p>
-    <h2>Choose your class</h2><p>Your choice changes your stats and combat style. More class skills and gear can be added as the world grows.</p>
-    <div class="classgrid">
-     <button class="classbtn" data-class="Warrior">⚔<strong>WARRIOR</strong><span>Strong melee<br>High vitality</span></button>
-     <button class="classbtn" data-class="Mage">✦<strong>MAGE</strong><span>Magic bolt<br>High mana</span></button>
-     <button class="classbtn" data-class="Ranger">➶<strong>RANGER</strong><span>Quick ranged<br>Balanced stats</span></button>
-     <button class="classbtn" data-class="Assassin">◆<strong>ASSASSIN</strong><span>Fast movement<br>Critical strikes</span></button>
-     <button class="classbtn" data-class="Paladin">✚<strong>PALADIN</strong><span>Durable fighter<br>Healing skill</span></button>
-    </div><p><b>Desktop:</b> WASD / arrows move · Space attack · E interact · Q special · I inventory · Esc pause<br><b>Mobile:</b> use the touch controls below the game.</p>
-   </div></div>
-   <div class="overlay" id="menuOverlay" style="display:none"><div class="card"><h2 id="menuTitle">INVENTORY</h2><div id="menuContent"></div><div class="quickrow" style="margin-top:14px"><button class="primary" id="closeMenu">BACK TO GAME</button><button id="saveBtn">SAVE GAME</button><button id="resetBtn">NEW GAME</button></div></div></div>
-  </section>
-  <aside class="sidebar">
-   <div class="panel"><h3>HERO STATUS</h3><div class="barrow"><span>HP</span><span id="hpText">100 / 100</span></div><div class="bar hp"><i id="hpBar"></i></div><div class="barrow"><span>MANA</span><span id="mpText">40 / 40</span></div><div class="bar mp"><i id="mpBar"></i></div><div class="barrow"><span>EXP</span><span id="xpText">0 / 30</span></div><div class="bar xp"><i id="xpBar"></i></div><div class="barrow"><span>ATK</span><b id="atkText">10</b></div><div class="barrow"><span>DEF</span><b id="defText">3</b></div></div>
-   <div class="panel"><h3>ACTIVE QUEST</h3><div id="questText"><div class="questtitle">A LIGHT IN THE DARK</div>Find Elder Rowan in the village. Walk near the elder and press E.</div></div>
-   <div class="panel"><h3>QUICK ACTIONS</h3><div class="quickrow"><button id="invBtn">🎒 INVENTORY (I)</button><button id="questBtn">📜 QUEST (J)</button><button id="helpBtn">? HELP</button></div><p style="font-size:9px;line-height:1.5;color:#9fb6b2;margin:8px 0 0">Defeat enemies for EXP and gold. Save is stored locally in this browser.</p></div>
-   <div class="panel"><h3>ADVENTURE LOG</h3><div class="log" id="log"></div></div>
-  </aside>
- </main>
- 
- <footer class="bottom"><span>Build your legend, one quest at a time.</span><span>Autosave-ready · Pixel-art RPG</span></footer>
+<body><div id="app">
+<header class="top"><div class="brand">PIXEL QUEST <small>EMBERFALL • ADVENTURE RPG</small></div><div class="stats"><span>LV <b id="lvTop">1</b></span><span id="classTop">HERO</span><span>✦ <b id="goldTop">12</b></span><span id="zoneTop">GREENWOLD</span></div></header>
+<div class="layout"><div class="gamebox"><canvas id="game" width="768" height="432"></canvas><div class="skillbadge" id="skillBadge">✦ SKILL READY</div><div id="toast"></div>
+<div class="mobilecontrols"><div class="dpad"><button class="up" data-m="up">▲</button><button class="left" data-m="left">◀</button><button class="down" data-m="down">▼</button><button class="right" data-m="right">▶</button></div><div class="actions"><button data-a="bag"><span class="ico">🎒</span><span class="lbl">BAG</span></button><button data-a="quest"><span class="ico">📜</span><span class="lbl">QUEST</span></button><button data-a="talk"><span class="ico">💬</span><span class="lbl">TALK</span></button><button data-a="special"><span class="ico">✦</span><span class="lbl">SKILL</span></button><button data-a="attack"><span class="ico">⚔️</span><span class="lbl">ATTACK</span></button><button data-a="potion"><span class="ico">🧪</span><span class="lbl">POTION</span></button></div></div>
+<div class="overlay" id="overlay"><div class="card"><h1>⚔ PIXEL QUEST: EMBERFALL</h1><p>A living pixel world awaits. Choose a path, learn your skills, help the village, and discover the old forest ruins. Best played in landscape on mobile.</p><div class="classes">
+<button data-class="Warrior">🛡<strong>WARRIOR</strong><span>Durable • Cleave</span></button><button data-class="Mage">🔮<strong>MAGE</strong><span>Arc Bolt • Range</span></button><button data-class="Ranger">🏹<strong>RANGER</strong><span>Quick • Piercing</span></button><button data-class="Assassin">🌑<strong>ASSASSIN</strong><span>Dash • Critical</span></button><button data-class="Paladin">✨<strong>PALADIN</strong><span>Heal • Defense</span></button></div><p><b>Keyboard:</b> WASD/arrows move • Space attack • E skill • F talk • Q potion • I bag • J quest. Touch buttons appear on phones.</p><div class="row"><button id="continue" class="primary">CONTINUE SAVE</button><button id="newgame">NEW ADVENTURE</button></div></div></div>
 </div>
+<aside class="side"><section class="panel"><h3>✦ ADVENTURER</h3><div class="barrow"><span>HP</span><span id="hpText">100/100</span></div><div class="bar hp"><i id="hpBar"></i></div><div class="barrow"><span>MP</span><span id="mpText">60/60</span></div><div class="bar mp"><i id="mpBar"></i></div><div class="barrow"><span>EXP</span><span id="xpText">0/30</span></div><div class="bar xp"><i id="xpBar"></i></div><div class="barrow"><span>ATK <b id="atkText">10</b></span><span>DEF <b id="defText">3</b></span></div></section><section class="panel"><h3>📜 ACTIVE QUEST</h3><div class="quest" id="questText">Find Elder Rowan.</div></section><section class="panel"><h3>🎒 QUICK ACTIONS</h3><div class="row"><button data-a="bag">INVENTORY</button><button data-a="quest">QUEST LOG</button></div><div class="row" style="margin-top:5px"><button data-a="talk">TALK [F]</button><button data-a="potion">POTION [Q]</button></div><div class="row" style="margin-top:5px"><button data-a="save">SAVE</button><button data-a="help">HELP</button></div></section><section class="panel"><h3>📖 ADVENTURE LOG</h3><div class="log" id="log"></div></section></aside></div>
+<div class="bottom"><span>EXPLORE • FIGHT • GROW</span><span>Auto-save enabled · <span id="saveState">Not saved</span></span></div></div>
 <script>
-(()=>{
-'use strict';
-const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
-ctx.imageSmoothingEnabled=false;
-const W=640,H=400,T=16,world={w:960,h:720};
-const $=id=>document.getElementById(id);
-let started=false,paused=false,menuOpen=false,last=0,gameTime=0,shake=0,toastTimer=0;
-let ambientMotes=Array.from({length:52},()=>({x:Math.random()*960,y:Math.random()*720,phase:Math.random()*6.28,size:Math.random()<.75?1:2}));
-const keys={},touch={up:false,down:false,left:false,right:false};
-let player,enemies=[],particles=[],drops=[],npcs=[],obstacles=[],decor=[],logs=[],quest,items={},gold=12;
-const classData={
- Warrior:{hp:125,mp:35,atk:14,def:6,speed:2.0,color:'#e7b46d',skill:'Cleave',desc:'A broad strike that hits nearby enemies.'},
- Mage:{hp:85,mp:75,atk:9,def:2,speed:2.05,color:'#8bc8ff',skill:'Arc Bolt',desc:'A powerful homing magic projectile.'},
- Ranger:{hp:100,mp:45,atk:11,def:3,speed:2.35,color:'#9be08c',skill:'Piercing Shot',desc:'A fast arrow that travels farther.'},
- Assassin:{hp:92,mp:40,atk:12,def:2,speed:2.75,color:'#d2a6ef',skill:'Shadow Dash',desc:'Dash forward and damage nearby foes.'},
- Paladin:{hp:118,mp:55,atk:10,def:7,speed:1.95,color:'#f1df91',skill:'Radiant Heal',desc:'Restore a portion of your health.'}
-};
-function freshPlayer(cls){let c=classData[cls];return{x:150,y:260,px:150,py:260,dir:1,faceY:0,speed:c.speed,hp:c.hp,maxHp:c.hp,mp:c.mp,maxMp:c.mp,atk:c.atk,def:c.def,level:1,xp:0,nextXp:30,gold:12,cls,color:c.color,attackT:0,skillT:0,invuln:0,walk:0,damageFlash:0};}
+(()=>{'use strict';
+const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d');
+const W=768,H=432,T=16,world={w:1280,h:960};let player=null,started=false,menu=false,paused=false,gameTime=0,shake=0,camX=0,camY=0,obstacles=[],decor=[],npcs=[],enemies=[],particles=[],drops=[],keys={},touch={up:false,down:false,left:false,right:false},gold=12,items={'Potion':3},quest={step:0,kills:0,shards:0},logs=[],last=0,autosave=0,skillCooldown=0,castTime=0,castKind='',attackCooldown=0,toastTimer=0,zone='GREENWOLD';
+const classes={Warrior:{hp:140,mp:42,atk:15,def:7,speed:2.4,color:'#d87957',cost:12,cool:3.2,skill:'Cleave'},Mage:{hp:82,mp:100,atk:13,def:2,speed:2.3,color:'#6f9ee7',cost:20,cool:3.8,skill:'Arc Bolt'},Ranger:{hp:100,mp:70,atk:12,def:4,speed:2.8,color:'#87bf77',cost:16,cool:3.1,skill:'Piercing Shot'},Assassin:{hp:88,mp:66,atk:16,def:3,speed:3.1,color:'#ae8bd5',cost:17,cool:3.4,skill:'Shadow Dash'},Paladin:{hp:125,mp:72,atk:11,def:8,speed:2.35,color:'#e6c86c',cost:18,cool:4.5,skill:'Radiant Heal'}};
+function fresh(cls){const c=classes[cls];return{x:160,y:250,px:160,py:250,dir:1,faceY:0,speed:c.speed,hp:c.hp,maxHp:c.hp,mp:c.mp,maxMp:c.mp,atk:c.atk,def:c.def,level:1,xp:0,nextXp:35,gold:12,cls,color:c.color,walk:0,attackT:0,invuln:0,flash:0,castGlow:0};}
+function log(t){logs.unshift(t);logs=logs.slice(0,8);$('log').innerHTML=logs.map(x=>'<div>'+x+'</div>').join('');}
+function say(t){$('toast').textContent=t;$('toast').style.opacity=1;toastTimer=1.8;log(t)}
+function rectHit(x,y,r){return x+r>r.x&&x-r<r.x+r.w&&y+r>r.y&&y-r<r.y+r.h}
+function blocked(x,y){for(const o of obstacles){if(x+5>o.x&&x-5<o.x+o.w&&y+3>o.y&&y-5<o.y+o.h)return true;}return x<20||y<20||x>world.w-20||y>world.h-20;}
+function moveEntity(ent,dx,dy){if(!blocked(ent.x+dx,ent.y))ent.x+=dx;if(!blocked(ent.x,ent.y+dy))ent.y+=dy;}
 function initWorld(){
  obstacles=[];decor=[];npcs=[];enemies=[];particles=[];drops=[];
- // village paths and buildings
- obstacles.push({x:75,y:70,w:72,h:54,type:'house'},{x:300,y:58,w:78,h:60,type:'house'},{x:385,y:205,w:55,h:44,type:'house'});
- // world boundary plus dense forest patches
- for(let x=20;x<world.w-20;x+=32){obstacles.push({x,y:16,w:16,h:16,type:'tree'});obstacles.push({x,y:world.h-32,w:16,h:16,type:'tree'});}
- for(let y=48;y<world.h-24;y+=32){obstacles.push({x:16,y,w:16,h:16,type:'tree'});obstacles.push({x:world.w-32,y,w:16,h:16,type:'tree'});}
- const treeSpots=[[190,90],[220,115],[250,70],[420,90],[455,125],[520,75],[570,120],[650,85],[720,110],[790,75],[845,145],[120,350],[165,390],[215,455],[300,420],[380,500],[480,420],[560,520],[640,390],[720,460],[820,390],[875,520],[260,610],[420,640],[620,630],[780,625]];
+ // village houses and winding roads
+ [[80,80,80,60],[300,65,80,64],[430,205,62,48],[170,405,72,54],[870,690,86,66]].forEach(([x,y,w,h])=>obstacles.push({x,y,w,h,type:'house'}));
+ for(let x=16;x<world.w;x+=32){obstacles.push({x,y:8,w:16,h:16,type:'tree'});obstacles.push({x,y:world.h-24,w:16,h:16,type:'tree'});}
+ for(let y=24;y<world.h;y+=32){obstacles.push({x:8,y,w:16,h:16,type:'tree'});obstacles.push({x:world.w-24,y,w:16,h:16,type:'tree'});}
+ const treeSpots=[[210,95],[245,115],[260,70],[390,100],[470,90],[510,150],[600,75],[660,110],[730,75],[800,135],[940,110],[1040,180],[150,340],[215,390],[275,465],[360,420],[390,530],[490,460],[560,570],[640,400],[740,480],[820,390],[930,480],[1080,420],[260,700],[420,760],[620,810],[790,820],[1100,760],[1020,600]];
  treeSpots.forEach(([x,y])=>obstacles.push({x,y,w:16,h:18,type:'tree'}));
- // rocks and water pools
- [[245,300],[260,300],[245,316],[500,260],[516,260],[500,276],[670,270],[686,270],[670,286]].forEach(([x,y])=>decor.push({x,y,type:'water'}));
- [[180,210],[195,225],[450,330],[460,340],[740,300],[755,315],[340,570],[350,580],[600,180],[610,190]].forEach(([x,y])=>decor.push({x,y,type:'flower'}));
- npcs=[
- {x:190,y:165,name:'Elder Rowan',color:'#e4bd84',kind:'elder',dialogue:'The forest slimes are stealing our glow-shards. Defeat 3 of them, then return to me.',talked:false},
- {x:325,y:170,name:'Mira the Healer',color:'#e9a6bc',kind:'healer',dialogue:'Need a hand? I can restore your health and mana for a few coins.',talked:false},
- {x:410,y:245,name:'Tomas',color:'#b8d2a2',kind:'merchant',dialogue:'A simple potion costs 8 gold. Useful when the forest gets rough.',talked:false}
- ];
- for(let i=0;i<10;i++)spawnSlime(250+(i%5)*95,280+Math.floor(i/5)*180,i<6?'green':'blue');
+ [[245,300],[261,300],[245,316],[500,260],[516,260],[500,276],[670,270],[686,270],[670,286],[970,390],[986,390],[970,406],[600,650],[616,650]].forEach(([x,y])=>decor.push({x,y,type:'water'}));
+ for(let i=0;i<75;i++){const x=55+Math.random()*(world.w-110),y=50+Math.random()*(world.h-100);if(!blocked(x,y))decor.push({x,y,type:Math.random()<.65?'flower':'grass'});}
+ npcs=[{x:195,y:175,name:'Elder Rowan',color:'#e4bd84',kind:'elder',dialogue:'The forest slimes are stealing our glow-shards. Defeat three, then return to me.'},{x:330,y:170,name:'Mira the Healer',color:'#e9a6bc',kind:'healer',dialogue:'A small potion can turn a hard battle. I can restore you for a few coins.'},{x:445,y:250,name:'Toma the Trader',color:'#d7b06d',kind:'merchant',dialogue:'Three potions for 15 gold? The forest is not kind to the unprepared.'},{x:900,y:670,name:'Warden Elowen',color:'#a4d7a4',kind:'warden',dialogue:'Beyond the old trees, the ruins are waking. Follow the blue lanterns.'}];
+ for(let i=0;i<15;i++)spawnEnemy(i<9?'slime':i<12?'blue':'moss',170+Math.random()*980,180+Math.random()*700);
 }
-function spawnSlime(x,y,type='green'){enemies.push({x,y,px:x,py:y,type,hp:type==='blue'?32:22,maxHp:type==='blue'?32:22,atk:type==='blue'?9:6,speed:type==='blue'?.55:.42,phase:Math.random()*6.28,hit:0,attack:0,dead:false,respawn:0,alert:false});}
-function initQuest(){quest={step:0,kills:0,done:false};}
-function log(msg){logs.unshift(msg);logs=logs.slice(0,7);$('log').innerHTML=logs.map(t=>`<div>› ${t}</div>`).join('');}
-function say(text){const el=$('toast');el.textContent=text;el.style.opacity=1;toastTimer=2.4;}
-function startGame(cls){
- player=freshPlayer(cls);gold=12;items={'Potion':2,'Glow-shard':0};initWorld();initQuest();started=true;paused=false;menuOpen=false;$('startOverlay').style.display='none';$('menuOverlay').style.display='none';logs=[];log(`You chose ${cls}. Your journey begins.`);updateUI();say('Find Elder Rowan near the village square.');}
-function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
-function rectHit(a,b){return a.x<b.x+b.w&&a.x+10>b.x&&a.y<b.y+b.h&&a.y+10>b.y}
-function blocked(x,y){let box={x:x-5,y:y-5,w:10,h:10};return obstacles.some(o=>rectHit(box,o));}
-function moveEntity(e,dx,dy){let nx=e.x+dx,ny=e.y+dy;if(!blocked(nx,e.y))e.x=clamp(nx,25,world.w-25);if(!blocked(e.x,ny))e.y=clamp(ny,25,world.h-25);}
-function nearestEnemy(range=50){let best=null,bd=range;for(const e of enemies){if(e.dead)continue;let d=Math.hypot(e.x-player.x,e.y-player.y);if(d<bd){bd=d;best=e;}}return best;}
-function particle(x,y,color,n=7,power=1){for(let i=0;i<n;i++){let a=Math.random()*Math.PI*2,s=(.6+Math.random()*2.3)*power;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.35+Math.random()*.35,max:.7,color,size:2+Math.random()*2});}}
-function damageEnemy(e,amount,knock=4){if(e.dead)return;e.hp-=amount;e.hit=.18;let dx=e.x-player.x,dy=e.y-player.y,d=Math.hypot(dx,dy)||1;e.x+=dx/d*knock;e.y+=dy/d*knock;particle(e.x,e.y,'#ffe8a0',6,.8);floatingText(e.x,e.y-8,amount,'#fff0ad');shake=.12;if(e.hp<=0){e.dead=true;e.respawn=10;let xp=e.type==='blue'?16:10,coins=e.type==='blue'?5:3;gainXp(xp);gold+=coins;items['Glow-shard']=(items['Glow-shard']||0)+1;quest.kills++;drops.push({x:e.x,y:e.y,life:7,type:'coin'});particle(e.x,e.y,e.type==='blue'?'#83d5ff':'#a8ef93',16,1.2);log(`Slime defeated: +${xp} EXP, +${coins} gold.`);if(quest.step===1&&quest.kills>=3){quest.step=2;say('Quest updated: Return to Elder Rowan!');log('You have enough glow-shards. Return to Elder Rowan.');}}}
-let floaters=[];
-function floatingText(x,y,text,color){floaters.push({x,y,text:String(text),color,life:.75});}
-function attack(){if(!started||paused||menuOpen||player.attackT>0)return;player.attackT=.25;let hit=false;for(const e of enemies){if(e.dead)continue;let dx=e.x-player.x,dy=e.y-player.y,d=Math.hypot(dx,dy);let facing=dx*player.dir+dy*player.faceY;if(d<34&&facing>-9){damageEnemy(e,player.atk+(player.cls==='Assassin'&&Math.random()<.25?8:0),5);hit=true;}}if(!hit)particle(player.x+player.dir*14,player.y+player.faceY*14,'#dcebd8',4,.4);}
-function special(){
- if(!started||paused||menuOpen||player.skillT>0)return;const c=player.cls;
- if(c==='Paladin'){if(player.mp<18){say('Not enough mana!');return;}player.mp-=18;let heal=Math.min(38,player.maxHp-player.hp);player.hp+=heal;player.skillT=4;particle(player.x,player.y,'#f6df85',18,1.3);floatingText(player.x,player.y-20,'+'+heal,'#a5ffc5');say('Radiant Heal!');}
- else {let cost=c==='Mage'?18:c==='Warrior'?12:14;if(player.mp<cost){say('Not enough mana!');return;}player.mp-=cost;player.skillT= c==='Assassin'?3:2.4;
- if(c==='Mage'){let e=nearestEnemy(170);if(e){damageEnemy(e,player.atk*2+8,8);particle(player.x,player.y,'#80d5ff',12,1.2);}else{let a=player.dir, b=player.faceY;particles.push({x:player.x+a*12,y:player.y+b*12,vx:a*4,vy:b*4,life:.7,max:.7,color:'#8bd6ff',size:5,bolt:true,damage:player.atk*2+8});}say('Arc Bolt!');}
- if(c==='Warrior'){for(const e of enemies)if(!e.dead&&Math.hypot(e.x-player.x,e.y-player.y)<54)damageEnemy(e,player.atk+12,8);particle(player.x,player.y,'#ffd27c',22,1.5);say('Cleave!');}
- if(c==='Ranger'){let a=player.dir,b=player.faceY;particles.push({x:player.x+a*10,y:player.y+b*10,vx:a*5.2,vy:b*5.2,life:.75,max:.75,color:'#b7f49c',size:4,bolt:true,damage:player.atk+13,range:120});say('Piercing Shot!');}
- if(c==='Assassin'){moveEntity(player,player.dir*48,player.faceY*48);for(const e of enemies)if(!e.dead&&Math.hypot(e.x-player.x,e.y-player.y)<42)damageEnemy(e,player.atk+10,10);particle(player.x,player.y,'#d9b0ff',16,1.5);say('Shadow Dash!');}
- }
- updateUI();
+function spawnEnemy(type,x,y){const c=type==='slime'?{hp:28,atk:6,speed:.65,xp:9,gold:2,color:'#6cc45b'}:type==='blue'?{hp:42,atk:9,speed:.8,xp:14,gold:4,color:'#5bb7e8'}:{hp:65,atk:12,speed:.55,xp:22,gold:7,color:'#b0a05d'};enemies.push({type,x,y,px:x,py:y,hp:c.hp,maxHp:c.hp,atk:c.atk,speed:c.speed,xp:c.xp,gold:c.gold,color:c.color,dead:false,alert:false,hit:0,attack:0,phase:Math.random()*6,windup:0});}
+function particle(x,y,color,n=8,life=.7,speed=1.5,size=3){for(let i=0;i<n;i++){let a=Math.random()*Math.PI*2,v=(.25+Math.random())*speed;particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:life*(.6+Math.random()*.6),max:life,color,size:Math.max(1,size*(.5+Math.random()))});}}
+function floatText(x,y,text,color='#fff0a6'){particles.push({x,y,vx:0,vy:-.5,life:.85,max:.85,color,size:1,text});}
+function damageEnemy(e,dmg){if(e.dead)return;e.hp-=dmg;e.hit=.18;shake=.08;floatText(e.x,e.y-12,'-'+Math.ceil(dmg),'#fff2bb');particle(e.x,e.y,e.color,7,.35,2,3);if(e.hp<=0){e.dead=true;e.respawn=18;player.xp+=e.xp;gold+=e.gold;items['Glow-shard']=(items['Glow-shard']||0)+(Math.random()<.45?1:0);floatText(e.x,e.y-15,'+'+e.xp+' EXP','#a4f4b7');particle(e.x,e.y,'#f5d57d',12,.65,2.3,3);if(quest.step===1){quest.kills++;if(quest.kills>=3)say('Three slimes defeated! Return to Elder Rowan.');}while(player.xp>=player.nextXp){player.xp-=player.nextXp;player.level++;player.nextXp=Math.floor(player.nextXp*1.45);player.maxHp+=8;player.hp=player.maxHp;player.maxMp+=5;player.mp=player.maxMp;player.atk+=2;player.def+=1;say('LEVEL UP! Level '+player.level);particle(player.x,player.y,'#ffe28b',24,1.2,2.8,4);}updateUI();saveGame();}}
+function attack(){if(!started||menu||attackCooldown>0)return;attackCooldown=.32;player.attackT=.25;let hit=false;for(const e of enemies){if(e.dead)continue;let dx=e.x-player.x,dy=e.y-player.y,d=Math.hypot(dx,dy),f=dx*player.dir+dy*player.faceY;if(d<37&&f>-12){damageEnemy(e,player.atk+(player.cls==='Assassin'&&Math.random()<.3?9:0));hit=true;}}particle(player.x+player.dir*11,player.y+player.faceY*11,hit?'#ffe18b':'#dcebd8',hit?8:3,.3,2.2,3);}
+function useSkill(){if(!started||menu||skillCooldown>0||castTime>0)return;const c=classes[player.cls];if(player.mp<c.cost){say('Not enough mana!');return;}player.mp-=c.cost;castTime=player.cls==='Mage'?.55:.3;castKind=player.cls;player.castGlow=.7;particle(player.x,player.y-6,c.color,14,.65,1.8,3);say(c.skill+'…');updateUI();setTimeout(()=>{if(!started||!player)return;resolveSkill(c.skill);},player.cls==='Mage'?550:300);}
+function resolveSkill(skill){if(!player)return;skillCooldown=classes[player.cls].cool;player.castGlow=.5;
+ if(skill==='Radiant Heal'){let h=Math.min(42,player.maxHp-player.hp);player.hp+=h;floatText(player.x,player.y-18,'+'+h,'#a8ffc5');particle(player.x,player.y,'#ffe28b',26,.9,2.2,4);}
+ if(skill==='Cleave'){for(const e of enemies)if(!e.dead&&Math.hypot(e.x-player.x,e.y-player.y)<62)damageEnemy(e,player.atk+15);particle(player.x,player.y,'#ffcb78',24,.55,3,4);}
+ if(skill==='Arc Bolt'){let e=nearestEnemy(240);if(e){let n=10;for(let i=0;i<n;i++){let t=i/n;particles.push({x:player.x,y:player.y-5,vx:(e.x-player.x)*t*0.045,vy:(e.y-player.y)*t*0.045,life:.5,max:.5,color:i%2?'#77e6ff':'#fff',size:4,bolt:true});}setTimeout(()=>{if(e&&!e.dead)damageEnemy(e,player.atk*2+12);particle(e.x,e.y,'#7be8ff',18,.6,2.5,4);},240);}else particle(player.x+player.dir*18,player.y+player.faceY*18,'#7be8ff',12,.5,2,4);}
+ if(skill==='Piercing Shot'){const a=player.dir,b=player.faceY;particles.push({x:player.x+a*8,y:player.y+b*8,vx:a*7,vy:b*7,life:.7,max:.7,color:'#b7f49c',size:5,bolt:true,damage:player.atk+18,range:230});}
+ if(skill==='Shadow Dash'){const ox=player.x,oy=player.y;moveEntity(player,player.dir*62,player.faceY*62);particle(ox,oy,'#bd8aff',15,.55,2.5,3);particle(player.x,player.y,'#e2d0ff',12,.45,2,3);for(const e of enemies)if(!e.dead&&Math.hypot(e.x-player.x,e.y-player.y)<42)damageEnemy(e,player.atk+18);}
 }
-function gainXp(n){player.xp+=n;while(player.xp>=player.nextXp){player.xp-=player.nextXp;player.level++;player.nextXp=Math.floor(player.nextXp*1.45+8);player.maxHp+=10;player.maxMp+=5;player.atk+=2;player.def+=1;player.hp=player.maxHp;player.mp=player.maxMp;particle(player.x,player.y,'#f8d978',25,1.5);say(`LEVEL UP! You are now level ${player.level}.`);log(`Level up! Stats increased to level ${player.level}.`);}}
-function interact(){if(!started||paused||menuOpen)return;let npc=npcs.map(n=>({n,d:Math.hypot(n.x-player.x,n.y-player.y)})).sort((a,b)=>a.d-b.d)[0];if(!npc||npc.d>38){say('Nothing nearby to interact with.');return;}let n=npc.n;
- if(n.kind==='elder'){
- if(quest.step===0){quest.step=1;n.talked=true;log('Quest accepted: defeat 3 slimes.');say('Quest accepted: A Light in the Dark');}
- else if(quest.step===1){say(`Slimes defeated: ${quest.kills}/3. Keep going!`);}
- else if(quest.step===2){quest.step=3;quest.done=true;gold+=35;gainXp(35);items['Potion']=(items['Potion']||0)+2;log('Quest complete! +35 gold, +35 EXP, +2 Potions.');say('Quest complete!');}
- else {say('The village is safer thanks to you. Explore beyond the old trees!');}
- }else if(n.kind==='healer'){if(gold>=5){gold-=5;player.hp=player.maxHp;player.mp=player.maxMp;particle(player.x,player.y,'#9df5c8',15,1);say('Restored! -5 gold.');}else say('A full restoration costs 5 gold.');}
- else if(n.kind==='merchant'){if(gold>=8){gold-=8;items['Potion']=(items['Potion']||0)+1;say('Potion purchased! -8 gold.');}else say('A potion costs 8 gold.');}
- updateUI();
+function nearestEnemy(range){let best=null,d0=range;for(const e of enemies)if(!e.dead){let d=Math.hypot(e.x-player.x,e.y-player.y);if(d<d0){d0=d;best=e;}}return best;}
+function potion(){if(!started||!items.Potion)return;if(player.hp>=player.maxHp&&player.mp>=player.maxMp){say('Already fully restored.');return;}items.Potion--;let h=Math.min(45,player.maxHp-player.hp),m=Math.min(22,player.maxMp-player.mp);player.hp+=h;player.mp+=m;floatText(player.x,player.y-20,'+'+h+' HP','#a5ffc5');particle(player.x,player.y,'#ff8d9f',12,.6,1.8,3);say('Potion used');updateUI();saveGame();}
+function talk(){if(!started||menu)return;let n=null,d0=48;for(const x of npcs){let d=Math.hypot(x.x-player.x,x.y-player.y);if(d<d0){d0=d;n=x;}}if(!n){say('No one nearby.');return;}if(n.kind==='elder'){if(quest.step===0){quest.step=1;say('Quest started: Defeat 3 forest slimes!');}else if(quest.step===1&&quest.kills>=3){quest.step=2;gold+=35;items.Potion=(items.Potion||0)+2;quest.step=3;say('Quest complete! +35 gold and 2 potions.');}else say(n.dialogue);}
+ else if(n.kind==='healer'){if(gold>=5){gold-=5;player.hp=player.maxHp;player.mp=player.maxMp;say('Restored!');}else say('Healing costs 5 gold.');}
+ else if(n.kind==='merchant'){if(gold>=15){gold-=15;items.Potion=(items.Potion||0)+3;say('Bought 3 potions.');}else say('Need 15 gold for 3 potions.');}
+ else say(n.dialogue);updateUI();saveGame();}
+function updateUI(){if(!player)return;const pct=(a,b)=>Math.max(0,Math.min(100,a/b*100))+'%';$('lvTop').textContent=player.level;$('goldTop').textContent=gold;$('classTop').textContent=player.cls;$('hpText').textContent=Math.ceil(player.hp)+' / '+player.maxHp;$('mpText').textContent=Math.ceil(player.mp)+' / '+player.maxMp;$('xpText').textContent=player.xp+' / '+player.nextXp;$('hpBar').style.width=pct(player.hp,player.maxHp);$('mpBar').style.width=pct(player.mp,player.maxMp);$('xpBar').style.width=pct(player.xp,player.nextXp);$('atkText').textContent=player.atk;$('defText').textContent=player.def;$('questText').innerHTML='<b>'+(quest.step===3?'✓ QUEST COMPLETE':'A LIGHT IN THE DARK')+'</b><br>'+(quest.step===0?'Find Elder Rowan and speak to him.':quest.step===1?'Defeat slimes: '+Math.min(quest.kills,3)+'/3. Return to Elder Rowan.':quest.step===2?'Return to Elder Rowan.':'Quest complete! Explore and collect glow-shards ('+(items['Glow-shard']||0)+').');$('skillBadge').textContent=castTime>0?'✦ CASTING…':skillCooldown>0?'✦ '+classes[player.cls].skill.toUpperCase()+' '+skillCooldown.toFixed(1)+'s':'✦ SKILL READY';}
+function saveGame(){if(!player)return;try{localStorage.setItem('emberfall-save',JSON.stringify({player,gold,items,quest}));$('saveState').textContent='Saved';}catch(e){}}
+function loadGame(){try{const s=JSON.parse(localStorage.getItem('emberfall-save'));if(!s)return false;player=s.player;gold=s.gold||0;items=s.items||{Potion:0};quest=s.quest||{step:0,kills:0,shards:0};return true;}catch(e){return false;}}
+function start(cls){player=fresh(cls);gold=12;items={Potion:3};quest={step:0,kills:0,shards:0};started=true;menu=false;$('overlay').style.display='none';initWorld();say('Welcome to Emberfall. Find Elder Rowan!');updateUI();saveGame();}
+function nearestNpc(){let n=null,d0=55;for(const x of npcs){let d=Math.hypot(x.x-player.x,x.y-player.y);if(d<d0){n=x;d0=d;}}return n;}
+function drawHouse(o){let x=o.x-camX,y=o.y-camY;ctx.fillStyle='#1b302b';ctx.fillRect(x-3,y+o.h-5,o.w+6,9);ctx.fillStyle='#d3b17a';ctx.fillRect(x,y+8,o.w,o.h-8);ctx.fillStyle='#9a5540';ctx.fillRect(x-5,y,o.w+10,18);ctx.fillStyle='#d98458';ctx.fillRect(x+4,y+3,o.w-8,5);ctx.fillStyle='#693e35';ctx.fillRect(x+o.w/2-7,y+o.h-20,14,20);ctx.fillStyle='#8ed4db';ctx.fillRect(x+10,y+24,11,9);ctx.fillRect(x+o.w-21,y+24,11,9);ctx.fillStyle='#e5c7a0';ctx.fillRect(x+14,y+26,3,5);ctx.fillRect(x+o.w-18,y+26,3,5);}
+function drawTree(o){let x=o.x-camX,y=o.y-camY;ctx.fillStyle='#1a3329';ctx.fillRect(x-5,y+8,25,15);ctx.fillStyle='#704a35';ctx.fillRect(x+5,y+6,7,17);ctx.fillStyle='#28533a';ctx.fillRect(x-6,y-4,27,17);ctx.fillStyle='#38784b';ctx.fillRect(x-3,y-10,21,14);ctx.fillStyle='#55985a';ctx.fillRect(x+1,y-8,8,5);ctx.fillStyle='#75b969';ctx.fillRect(x+3,y-5,3,2);ctx.fillStyle='#1d593d';ctx.fillRect(x-7,y+6,28,4);}
+function drawCharacter(x,y,color,dir,walk,kind,faceY){let bob=walk?Math.abs(Math.sin(gameTime*13))*1.5:0,leg=walk?Math.sin(gameTime*13)*2.2:0;
+ ctx.fillStyle='#10231e88';ctx.fillRect(x-9,y+6,18,5);ctx.fillStyle='#182b35';ctx.fillRect(x-7,y-8-bob,14,15);
+ ctx.fillStyle='#293d48';ctx.fillRect(x-5+leg,y+1,4,5);ctx.fillRect(x+1-leg,y+1,4,5);ctx.fillStyle='#657b82';ctx.fillRect(x-5+leg,y+5,4,1);ctx.fillRect(x+1-leg,y+5,4,1);
+ ctx.fillStyle=color;ctx.fillRect(x-6,y-8-bob,12,10);ctx.fillStyle='#ffffff40';ctx.fillRect(x-5,y-7-bob,3,6);ctx.fillStyle='#efc49d';ctx.fillRect(x-5,y-14-bob,10,8);
+ if(faceY<0){ctx.fillStyle='#49352e';ctx.fillRect(x-6,y-15-bob,12,7);ctx.fillRect(x-4,y-17-bob,8,3);}else{ctx.fillStyle='#49352e';ctx.fillRect(x-6,y-15-bob,12,3);ctx.fillRect(x-6,y-12-bob,2,3);if(faceY>0){ctx.fillStyle='#27313b';ctx.fillRect(x-4,y-11-bob,2,2);ctx.fillRect(x+2,y-11-bob,2,2);}else{ctx.fillStyle='#27313b';ctx.fillRect(x+(dir<0?-4:2),y-11-bob,2,2);}}
+ if(kind==='player'){ctx.fillStyle='#d6bd7a';ctx.fillRect(x-1,y-5-bob,3,5);if(player.cls==='Mage'){ctx.fillStyle='#a3eaff';ctx.fillRect(x+5,y-10-bob,2,5);ctx.fillStyle='#4478b9';ctx.fillRect(x+4,y-13-bob,4,3);}if(player.cls==='Ranger'){ctx.fillStyle='#6c4930';ctx.fillRect(x-8,y-12-bob,2,10);}if(player.cls==='Assassin'){ctx.fillStyle='#302941';ctx.fillRect(x-6,y-16-bob,12,3);}if(player.cls==='Paladin'){ctx.fillStyle='#f5df88';ctx.fillRect(x-4,y-17-bob,8,2);}
+ if(player.attackT>0){ctx.save();ctx.globalAlpha=.8;ctx.strokeStyle='#fff1a4';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x+dir*9,y-4,14,dir===1?-.9:2.2,dir===1?.9:4.1);ctx.stroke();ctx.restore();}}
 }
-function usePotion(){if((items.Potion||0)<=0){say('No potions in your bag.');return;}if(player.hp===player.maxHp){say('Your HP is already full.');return;}items.Potion--;let h=Math.min(45,player.maxHp-player.hp);player.hp+=h;floatingText(player.x,player.y-18,'+'+h,'#a5ffc5');particle(player.x,player.y,'#a5ffc5',10);say('Potion used.');updateUI();}
-function openMenu(which='inventory'){
- if(!started)return;menuOpen=true;paused=true;$('menuOverlay').style.display='flex';$('menuTitle').textContent=which==='quest'?'QUEST JOURNAL':which==='help'?'HOW TO PLAY':'INVENTORY';
- let c=$('menuContent');
- if(which==='quest'){c.innerHTML=`<p><b style="color:var(--mint)">A LIGHT IN THE DARK</b></p><p>${quest.step===0?'Find Elder Rowan and speak with him.':quest.step===1?`Defeat slimes in the forest. Progress: ${quest.kills}/3.`:quest.step===2?'Return to Elder Rowan to claim your reward.':'Complete! The village light is restored, for now.'}</p><p style="color:#aabfba">Hint: slimes respawn after a short time. Explore the eastern forest for blue slimes.</p>`;}
- else if(which==='help'){c.innerHTML=`<p><b>MOVE</b> — WASD / arrow keys, or mobile D-pad.</p><p><b>ATTACK</b> — Space or ATTACK. Face enemies and get close.</p><p><b>CLASS SKILL</b> — Q or SKILL. Uses mana and has a cooldown.</p><p><b>INTERACT</b> — E near an NPC. The healer restores you for 5 gold; merchant sells potions for 8.</p><p><b>POTION</b> — press H. Progress is stored in this browser using Save Game.</p><p><b>TIP</b> — blue slimes are tougher but reward more EXP and gold.</p>`;}
- else {c.innerHTML=`<p><b style="color:var(--gold)">${player.cls} · LEVEL ${player.level}</b></p><p>${classData[player.cls].desc}</p><div class="barrow"><span>Potions</span><b>${items.Potion||0}</b></div><div class="barrow"><span>Glow-shards collected</span><b>${items['Glow-shard']||0}</b></div><div class="barrow"><span>Gold</span><b>${gold}</b></div><p style="color:#aabfba">Potions restore up to 45 HP. Press H to use one instantly.</p>`;}
+function ground(){ctx.fillStyle='#39774e';ctx.fillRect(0,0,W,H);
+ for(let y=Math.floor(camY/32)*32;y<camY+H+32;y+=32)for(let x=Math.floor(camX/32)*32;x<camX+W+32;x+=32){let sx=x-camX,sy=y-camY;let v=Math.abs(Math.sin(x*12.989+y*78.233));ctx.fillStyle=v>.7?'#417f51':v<.15?'#326b49':'#3b754d';ctx.fillRect(sx,sy,32,32);ctx.fillStyle='#50875a';ctx.fillRect(sx+4,sy+5,2,2);ctx.fillRect(sx+22,sy+19,3,2);if(v>.8){ctx.fillStyle='#2e6848';ctx.fillRect(sx+12,sy+10,5,2);}}
+ // winding path and lantern trail
+ ctx.fillStyle='#9a865c';ctx.fillRect(100-camX,150-camY,380,22);ctx.fillRect(230-camX,150-camY,22,250);ctx.fillRect(230-camX,390-camY,470,22);ctx.fillStyle='#b9a477';for(let i=0;i<30;i++){let x=120+i*12-camX,y=158-camY;ctx.fillRect(x,y+(i%3)*3,4,2);}
+ // water shimmer
+ for(const d of decor){let x=d.x-camX,y=d.y-camY;if(d.type==='water'){ctx.fillStyle='#255e70';ctx.fillRect(x,y,16,16);ctx.fillStyle='#3d9caf';ctx.fillRect(x+2,y+3,8,2);ctx.fillRect(x+7,y+10,6,2);ctx.fillStyle='#a3e6dd';ctx.fillRect(x+4+Math.sin(gameTime*2+x)*2,y+7,3,1);}else if(d.type==='flower'){ctx.fillStyle='#2a6540';ctx.fillRect(x+7,y+5,2,8);ctx.fillStyle='#ffd8ef';ctx.fillRect(x+4,y+3,4,4);ctx.fillStyle='#ffdf8a';ctx.fillRect(x+5,y+4,2,2);}else{ctx.fillStyle='#76a85c';ctx.fillRect(x,y,3,2);ctx.fillRect(x+6,y+5,2,3);}}
 }
-function closeMenu(){menuOpen=false;paused=false;$('menuOverlay').style.display='none';}
-function saveGame(){if(!started)return;let data={player,gold,items,quest,logs};try{localStorage.setItem('pixelQuestEmberfall',JSON.stringify(data));say('Game saved in this browser.');log('Game saved.');}catch(e){say('Save unavailable in this browser.');}}
-function loadGame(){try{let d=JSON.parse(localStorage.getItem('pixelQuestEmberfall'));if(!d||!d.player)return false;player=d.player;gold=d.gold||0;items=d.items||{};quest=d.quest||{step:0,kills:0,done:false};logs=d.logs||[];initWorld();started=true;$('startOverlay').style.display='none';$('menuOverlay').style.display='none';updateUI();log('Saved adventure loaded.');return true;}catch(e){return false;}}
-function resetGame(){if(confirm('Start a new adventure? Your current browser save will be replaced only if you save again.')){closeMenu();started=false;$('startOverlay').style.display='flex';}}
-function updateUI(){
- if(!player)return;const pct=(a,b)=>`${Math.max(0,Math.min(100,a/b*100))}%`;
- $('levelTop').textContent=player.level;$('goldTop').textContent=gold;$('classTop').textContent=player.cls;
- $('hpText').textContent=`${Math.ceil(player.hp)} / ${player.maxHp}`;$('mpText').textContent=`${Math.ceil(player.mp)} / ${player.maxMp}`;$('xpText').textContent=`${player.xp} / ${player.nextXp}`;
- $('hpBar').style.width=pct(player.hp,player.maxHp);$('mpBar').style.width=pct(player.mp,player.maxMp);$('xpBar').style.width=pct(player.xp,player.nextXp);
- $('atkText').textContent=player.atk;$('defText').textContent=player.def;
- let q=quest.step===0?'Find Elder Rowan in the village. Walk near the elder and press E.':quest.step===1?`Defeat slimes: ${Math.min(quest.kills,3)}/3. Return to Elder Rowan afterward.`:quest.step===2?'Return to Elder Rowan and press E to claim your reward.':`Quest complete! Explore, level up, and gather glow-shards (${items['Glow-shard']||0}).`;
- $('questText').innerHTML=`<div class="questtitle">${quest.step===3?'✓ QUEST COMPLETE':'A LIGHT IN THE DARK'}</div>${q}`;
-}
-function drawGround(camX,camY){
- ctx.fillStyle='#3e7954';ctx.fillRect(0,0,W,H);
- // broad terrain colour blocks and subtle pixel texture make the world feel less flat
- for(let yy=Math.floor(camY/64)*64;yy<camY+H+64;yy+=64){
-  for(let xx=Math.floor(camX/64)*64;xx<camX+W+64;xx+=64){
-   const sx=xx-camX,sy=yy-camY;
-   if(((xx/64|0)*3+(yy/64|0)*5)%7===0){ctx.fillStyle='#477f57';ctx.fillRect(sx+4,sy+6,34,22);ctx.fillStyle='#376d4b';ctx.fillRect(sx+8,sy+12,24,3);}
-  }
- }
- // subtle checkerboard grass tiles
- for(let y=Math.floor(camY/T)*T;y<camY+H+T;y+=T)for(let x=Math.floor(camX/T)*T;x<camX+W+T;x+=T){let sx=x-camX,sy=y-camY;ctx.fillStyle=((Math.floor(x/T)+Math.floor(y/T))%2===0)?'#417b55':'#3e7651';ctx.fillRect(sx,sy,T,T);if((Math.floor(x/T)*7+Math.floor(y/T)*13)%11===0){ctx.fillStyle='#578d5d';ctx.fillRect(sx+4,sy+5,2,2);ctx.fillRect(sx+10,sy+11,2,2);}}
- // winding path
- ctx.fillStyle='#bca77a';ctx.fillRect(95-camX,145-camY,300,25);ctx.fillRect(180-camX,145-camY,25,155);ctx.fillRect(180-camX,280-camY,330,23);ctx.fillRect(480-camX,280-camY,25,190);ctx.fillRect(480-camX,445-camY,260,22);
- ctx.fillStyle='#c9b68b';ctx.fillRect(95-camX,148-camY,300,3);ctx.fillRect(183-camX,145-camY,3,155);
- // flowers and water
- for(const d of decor){let x=d.x-camX,y=d.y-camY;if(x<-20||x>W+20||y<-20||y>H+20)continue;if(d.type==='water'){ctx.fillStyle='#347f9a';ctx.fillRect(x,y,16,16);ctx.fillStyle='#6dc3cf';ctx.fillRect(x+3,y+4,6,2);ctx.fillRect(x+10,y+11,4,2);}else{ctx.fillStyle='#4b9b5b';ctx.fillRect(x+5,y+5,3,5);ctx.fillStyle='#f3d8f0';ctx.fillRect(x+3,y+2,3,3);ctx.fillStyle='#f5d76c';ctx.fillRect(x+6,y+3,3,3);}}
-}
-function drawHouse(o,cx,cy){let x=o.x-cx,y=o.y-cy;if(x<-100||x>W+50||y<-100||y>H+50)return;ctx.fillStyle='#5b4135';ctx.fillRect(x-4,y+8,o.w+8,o.h-2);ctx.fillStyle='#d4bd91';ctx.fillRect(x,y+14,o.w,o.h-14);ctx.fillStyle='#8e5143';ctx.fillRect(x-6,y,o.w+12,20);ctx.fillStyle='#b66c55';ctx.fillRect(x+4,y+3,o.w-8,5);ctx.fillStyle='#6c4836';ctx.fillRect(x+o.w/2-6,y+o.h-18,12,18);ctx.fillStyle='#d9c68f';ctx.fillRect(x+o.w/2+2,y+o.h-10,2,2);ctx.fillStyle='#7eaaad';ctx.fillRect(x+10,y+23,12,10);ctx.fillRect(x+o.w-22,y+23,12,10);ctx.fillStyle='#d9dfbc';ctx.fillRect(x+14,y+25,4,3);ctx.fillRect(x+o.w-18,y+25,4,3);
- ctx.fillStyle='#713f39';ctx.fillRect(x-5,y+16,o.w+10,3);ctx.fillStyle='#e3a06c';ctx.fillRect(x+12,y+34,8,2);ctx.fillRect(x+o.w-20,y+34,8,2);
- ctx.fillStyle='#d6b47d';ctx.fillRect(x+o.w/2-2,y+o.h-16,4,3);
- }
-function drawTree(o,cx,cy){let x=o.x-cx,y=o.y-cy;if(x<-30||x>W+30||y<-40||y>H+30)return;ctx.fillStyle='#2b563e';ctx.fillRect(x+4,y+9,10,10);ctx.fillStyle='#27563e';ctx.fillRect(x+1,y+4,14,11);ctx.fillStyle='#2e6947';ctx.fillRect(x+3,y,11,13);ctx.fillStyle='#4b8b51';ctx.fillRect(x+4,y+2,5,4);ctx.fillStyle='#78583b';ctx.fillRect(x+7,y+11,4,7);ctx.fillStyle='#1e4937';ctx.fillRect(x+1,y+15,15,3);
- ctx.fillStyle='#3d7d4c';ctx.fillRect(x+2,y+4,3,5);ctx.fillRect(x+11,y+7,3,4);ctx.fillStyle='#679e55';ctx.fillRect(x+5,y+1,3,2);
- }
-function drawCharacter(x,y,color,dir=1,walk=0,kind='player'){
- // shadow, compact 16-bit sprite
- ctx.fillStyle='#20382d88';ctx.fillRect(x-8,y+6,17,4);
- ctx.fillStyle='#182c2b';ctx.fillRect(x-7,y-9,14,16);
- let leg=walk?Math.sin(gameTime*13)*2:0;
- ctx.fillStyle='#29343b';ctx.fillRect(x-5,y+1,4,5+Math.max(0,leg));ctx.fillRect(x+1,y+1,4,5+Math.max(0,-leg));
- ctx.fillStyle=color;ctx.fillRect(x-6,y-8,12,10);ctx.fillStyle='#f0c59c';ctx.fillRect(x-5,y-14,10,8);
- ctx.fillStyle='#ffffff33';ctx.fillRect(x-5,y-7,3,6);ctx.fillStyle='#263a42';ctx.fillRect(x-6,y-15,12,2);
- ctx.fillStyle='#e9dfbd';ctx.fillRect(x-2,y-7,4,2);
- ctx.fillStyle='#4b332b';ctx.fillRect(x-6,y-15,12,3);ctx.fillRect(x-6,y-12,2,3);
- ctx.fillStyle='#27313b';ctx.fillRect(x+(dir>0?2:-4),y-11,2,2);
- if(kind==='player'){ctx.fillStyle=color;ctx.fillRect(x-7,y-5,14,4);ctx.fillStyle='#182a35';ctx.fillRect(x-7,y-1,14,3);
- ctx.fillStyle='#d4b879';ctx.fillRect(x-1,y-4,2,4);
- if(player.cls==='Mage'){ctx.fillStyle='#9fe3ff';ctx.fillRect(x+5,y-10,2,5);ctx.fillStyle='#3e6ea8';ctx.fillRect(x+4,y-12,4,3);}
- if(player.cls==='Ranger'){ctx.fillStyle='#6c4930';ctx.fillRect(x-8,y-12,2,10);}
- if(player.cls==='Assassin'){ctx.fillStyle='#342d49';ctx.fillRect(x-6,y-16,12,3);}
- if(player.cls==='Paladin'){ctx.fillStyle='#f5df88';ctx.fillRect(x-4,y-17,8,2);}ctx.fillStyle='#f5f1cf';ctx.fillRect(x-2,y-4,4,2);if(player.attackT>0){ctx.fillStyle='#f9edbb';let ax=x+dir*12,ay=y-5;ctx.fillRect(ax-4,ay-3,8,8);ctx.fillStyle='#fff';ctx.fillRect(ax-2,ay-1,4,4);}}
-}
-function render(){
- if(!player){ctx.fillStyle='#18342e';ctx.fillRect(0,0,W,H);return;}
- const camX=clamp(player.x-W/2,0,world.w-W),camY=clamp(player.y-H/2,0,world.h-H);
- ctx.save();if(shake>0)ctx.translate((Math.random()-.5)*3,(Math.random()-.5)*3);
- drawGround(camX,camY);
- // objects are depth sorted
- const things=[];
- obstacles.forEach(o=>things.push({y:o.y+(o.type==='house'?o.h:o.h),type:o.type,o}));
- npcs.forEach(n=>things.push({y:n.y+8,type:'npc',o:n}));
- enemies.forEach(e=>{if(!e.dead)things.push({y:e.y+6,type:'enemy',o:e});});
- things.push({y:player.y+8,type:'player',o:player});
- things.sort((a,b)=>a.y-b.y);
- for(const it of things){let o=it.o,x=o.x-camX,y=o.y-camY;
- if(it.type==='tree')drawTree(o,camX,camY);
- else if(it.type==='house')drawHouse(o,camX,camY);
- else if(it.type==='npc'){drawCharacter(x,y,o.color,1,0,'npc');ctx.font='7px monospace';ctx.textAlign='center';ctx.fillStyle='#f2edcf';ctx.fillText(o.name,x,y-22);ctx.fillStyle='#f4d779';ctx.fillText('!',x,y-27);}
- else if(it.type==='enemy'){let bob=Math.sin(gameTime*5+o.phase)*1.5;ctx.fillStyle='#203b32';ctx.fillRect(x-7,y+3,14,4);ctx.fillStyle=o.type==='blue'?'#4b9ed1': '#66b957';ctx.fillRect(x-7,y-6+bob,14,10);ctx.fillStyle=o.type==='blue'?'#7bd1f1':'#98e77c';ctx.fillRect(x-5,y-8+bob,10,8);ctx.fillStyle='#f1f5da';ctx.fillRect(x-4,y-3+bob,2,2);ctx.fillRect(x+2,y-3+bob,2,2);ctx.fillStyle='#29424a';ctx.fillRect(x-3,y+1+bob,2,1);ctx.fillRect(x+2,y+1+bob,2,1);if(o.hit>0){ctx.fillStyle='#fff9d9aa';ctx.fillRect(x-8,y-9,16,15);}if(o.hp<o.maxHp){ctx.fillStyle='#17262b';ctx.fillRect(x-9,y-13,18,3);ctx.fillStyle='#ff7776';ctx.fillRect(x-8,y-12,16*o.hp/o.maxHp,1);}}
- else if(it.type==='player'){drawCharacter(x,y,o.color,o.dir,o.walk,'player');}
- }
- for(const d of drops){let dx=d.x-camX,dy=d.y-camY;ctx.fillStyle='#3b2e1c';ctx.fillRect(dx-4,dy-2,9,6);ctx.fillStyle='#f6d56f';ctx.fillRect(dx-3,dy-4,7,5);ctx.fillStyle='#fff0a8';ctx.fillRect(dx-1,dy-3,3,2);}
- for(const p of particles){ctx.globalAlpha=clamp(p.life/(p.max||.7),0,1);ctx.fillStyle=p.color;ctx.fillRect(p.x-camX,p.y-camY,p.size,p.size);ctx.globalAlpha=1;}
- for(const f of floaters){ctx.globalAlpha=clamp(f.life,0,1);ctx.font='bold 10px monospace';ctx.textAlign='center';ctx.fillStyle='#18272a';ctx.fillText(f.text,f.x-camX+1,f.y-camY+1);ctx.fillStyle=f.color;ctx.fillText(f.text,f.x-camX,f.y-camY);ctx.globalAlpha=1;}
- // atmospheric light pool around the hero and drifting forest motes
- ctx.save();ctx.globalCompositeOperation='screen';
- const px=player.x-camX,py=player.y-camY;
- const glow=ctx.createRadialGradient(px,py,4,px,py,115);
- glow.addColorStop(0,'rgba(255,224,147,0.13)');glow.addColorStop(1,'rgba(255,224,147,0)');
- ctx.fillStyle=glow;ctx.fillRect(px-115,py-115,230,230);ctx.restore();
- for(const m of ambientMotes){let mx=(m.x+Math.sin(gameTime*.7+m.phase)*8-camX+world.w)%world.w,my=(m.y+Math.cos(gameTime*.55+m.phase)*6-camY+world.h)%world.h;if(mx>=0&&mx<W&&my>=0&&my<H){ctx.globalAlpha=.25+.35*(.5+.5*Math.sin(gameTime*2+m.phase));ctx.fillStyle='#e7e9a0';ctx.fillRect(mx,my,m.size,m.size);ctx.globalAlpha=1;}}
- // screen-edge vignette adds depth without muddying the pixel palette
- const vg=ctx.createRadialGradient(W/2,H/2,H*.25,W/2,H/2,Math.max(W,H)*.72);
- vg.addColorStop(0,'rgba(7,18,22,0)');vg.addColorStop(1,'rgba(7,18,22,.32)');ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
- // warm afternoon colour grading
- ctx.fillStyle='rgba(255,190,112,.035)';ctx.fillRect(0,0,W,H);
- // location badge and minimap
- ctx.fillStyle='#13252bdc';ctx.fillRect(7,7,128,23);ctx.strokeStyle='#6c8c7d';ctx.strokeRect(7.5,7.5,127,22);ctx.font='9px monospace';ctx.textAlign='left';ctx.fillStyle='#f3d782';ctx.fillText(player.x<220?'EMBERFALL VILLAGE':player.x<560?'WHISPERING WOODS':'EASTERN WILDS',13,21);
- const mx=W-75,my=8,mw=65,mh=49;ctx.fillStyle='#14252bd9';ctx.fillRect(mx,my,mw,mh);ctx.strokeStyle='#7a978c';ctx.strokeRect(mx,my,mw,mh);ctx.fillStyle='#5c9b67';ctx.fillRect(mx+3,my+3,mw-6,mh-6);ctx.fillStyle='#c4b183';ctx.fillRect(mx+10,my+13,24,3);ctx.fillRect(mx+20,my+13,3,20);ctx.fillStyle='#e9d16e';ctx.fillRect(mx+player.x/world.w*(mw-6),my+player.y/world.h*(mh-6),3,3);ctx.fillStyle='#ff8c86';enemies.forEach(e=>{if(!e.dead)ctx.fillRect(mx+e.x/world.w*(mw-6),my+e.y/world.h*(mh-6),2,2);});
- if(paused&&!menuOpen){ctx.fillStyle='#09141799';ctx.fillRect(0,0,W,H);ctx.fillStyle='#f6d578';ctx.font='bold 20px monospace';ctx.textAlign='center';ctx.fillText('PAUSED',W/2,H/2);}
+function render(){if(!player)return;camX=Math.max(0,Math.min(world.w-W,player.x-W/2));camY=Math.max(0,Math.min(world.h-H,player.y-H/2));ctx.save();if(shake>0)ctx.translate((Math.random()-.5)*4,(Math.random()-.5)*4);ground();
+ const things=[];obstacles.forEach(o=>things.push({y:o.y+o.h,type:o.type,o}));npcs.forEach(o=>things.push({y:o.y+8,type:'npc',o}));enemies.forEach(o=>{if(!o.dead)things.push({y:o.y+7,type:'enemy',o});});things.push({y:player.y+8,type:'player',o:player});things.sort((a,b)=>a.y-b.y);
+ for(const it of things){let o=it.o,x=o.x-camX,y=o.y-camY;if(it.type==='tree')drawTree(o);else if(it.type==='house')drawHouse(o);else if(it.type==='npc'){drawCharacter(x,y,o.color,1,0,'npc',0);ctx.font='8px monospace';ctx.textAlign='center';ctx.fillStyle='#f6edce';ctx.fillText(o.name,x,y-22);ctx.fillStyle='#f5d875';ctx.fillText('!',x,y-29);}else if(it.type==='player')drawCharacter(x,y,o.color,o.dir,o.walk,'player',o.faceY);else{let bob=Math.sin(gameTime*5+o.phase)*1.6;ctx.fillStyle='#1e392c';ctx.fillRect(x-9,y+4,18,4);ctx.fillStyle=o.color;ctx.fillRect(x-8,y-5+bob,16,11);ctx.fillStyle=o.type==='blue'?'#a5e9ff':o.type==='moss'?'#d9d18b':'#a5eb84';ctx.fillRect(x-5,y-8+bob,10,7);ctx.fillStyle='#f5f5da';ctx.fillRect(x-4,y-2+bob,2,2);ctx.fillRect(x+3,y-2+bob,2,2);if(o.windup>0){ctx.strokeStyle='#ff887b';ctx.lineWidth=2;ctx.strokeRect(x-11,y-12,22,18);}if(o.hit>0){ctx.fillStyle='#fffbd8aa';ctx.fillRect(x-9,y-9,18,17);}if(o.hp<o.maxHp){ctx.fillStyle='#13252b';ctx.fillRect(x-10,y-14,20,3);ctx.fillStyle='#ff777d';ctx.fillRect(x-10,y-14,20*o.hp/o.maxHp,3);}}}
+ // projectiles / spell particles / floating combat text
+ for(const p of particles){p._screen=true;let x=p.x-camX,y=p.y-camY;ctx.globalAlpha=Math.max(0,p.life/(p.max||1));if(p.text){ctx.font='bold 10px monospace';ctx.fillStyle=p.color;ctx.fillText(p.text,x,y);}else if(p.bolt){ctx.shadowColor=p.color;ctx.shadowBlur=10;ctx.fillStyle=p.color;ctx.fillRect(x-2,y-2,p.size+3,p.size+3);ctx.shadowBlur=0;ctx.fillStyle='#fff';ctx.fillRect(x,y,2,2);}else{ctx.fillStyle=p.color;ctx.fillRect(x,y,p.size,p.size);if(p.size>3){ctx.fillStyle='#ffffffaa';ctx.fillRect(x,y,2,2);}}ctx.globalAlpha=1;}
+ if(castTime>0){ctx.globalAlpha=.7;ctx.strokeStyle=player.color;ctx.lineWidth=3;ctx.beginPath();ctx.arc(player.x-camX,player.y-camY,15+(1-castTime)*32,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;}
+ // vignette and tiny fireflies
+ const g=ctx.createRadialGradient(W/2,H/2,80,W/2,H/2,W*.7);g.addColorStop(0,'#00000000');g.addColorStop(1,'#06131b55');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
  ctx.restore();
+ // zone marker
+ ctx.fillStyle='#12252bdc';ctx.fillRect(8,8,130,22);ctx.fillStyle='#f4d77f';ctx.font='bold 10px monospace';ctx.fillText(player.x>850&&player.y>600?'OLD RUINS':player.x>600?'DEEPWOOD':'GREENWOLD',15,22);
 }
-function update(dt){
- gameTime+=dt;if(toastTimer>0){toastTimer-=dt;if(toastTimer<=0)$('toast').style.opacity=0;}
- if(!started||paused||menuOpen)return;
- player.px=player.x;player.py=player.y;
- let dx=0,dy=0;if(keys.ArrowLeft||keys.a||touch.left)dx--;if(keys.ArrowRight||keys.d||touch.right)dx++;if(keys.ArrowUp||keys.w||touch.up)dy--;if(keys.ArrowDown||keys.s||touch.down)dy++;
- if(dx||dy){let l=Math.hypot(dx,dy);dx/=l;dy/=l;player.dir=Math.abs(dx)>Math.abs(dy)?Math.sign(dx):player.dir;player.faceY=Math.abs(dy)>Math.abs(dx)?Math.sign(dy):player.faceY;moveEntity(player,dx*player.speed*60*dt,dy*player.speed*60*dt);player.walk+=dt*10;}
- player.attackT=Math.max(0,player.attackT-dt);player.skillT=Math.max(0,player.skillT-dt);player.invuln=Math.max(0,player.invuln-dt);player.damageFlash=Math.max(0,player.damageFlash-dt);player.mp=Math.min(player.maxMp,player.mp+dt*1.5);
- for(const e of enemies){if(e.dead){e.respawn-=dt;if(e.respawn<=0){e.dead=false;e.hp=e.maxHp;e.x=clamp(e.px+((Math.random()-.5)*45),30,world.w-30);e.y=clamp(e.py+((Math.random()-.5)*45),30,world.h-30);}continue;}
- e.hit=Math.max(0,e.hit-dt);e.attack=Math.max(0,e.attack-dt);let d=Math.hypot(player.x-e.x,player.y-e.y);
- if(d<135){e.alert=true;if(d>19){let vx=(player.x-e.x)/(d||1),vy=(player.y-e.y)/(d||1);let wob=Math.sin(gameTime*3+e.phase)*.25;let ex=(vx-vy*wob)*e.speed*60*dt,ey=(vy+vx*wob)*e.speed*60*dt;let nx=e.x+ex,ny=e.y+ey;if(!blocked(nx,ny)){e.x=nx;e.y=ny;}}else if(e.attack<=0&&player.invuln<=0){e.attack=1.05;let dmg=Math.max(2,e.atk-player.def*.45);player.hp-=dmg;player.invuln=.65;player.damageFlash=.2;shake=.15;particle(player.x,player.y,'#ff8a83',8,1);floatingText(player.x,player.y-12,'-'+Math.ceil(dmg),'#ff8a83');if(player.hp<=0){player.hp=player.maxHp;player.mp=player.maxMp;player.x=150;player.y=260;gold=Math.max(0,gold-5);say('You were rescued in the village. -5 gold.');log('You recovered at the village after being defeated.');}}}
+function update(dt){gameTime+=dt;if(toastTimer>0){toastTimer-=dt;if(toastTimer<=0)$('toast').style.opacity=0;}if(!started||menu)return;
+ player.px=player.x;player.py=player.y;let dx=0,dy=0;if(keys.ArrowLeft||keys.a||touch.left)dx--;if(keys.ArrowRight||keys.d||touch.right)dx++;if(keys.ArrowUp||keys.w||touch.up)dy--;if(keys.ArrowDown||keys.s||touch.down)dy++;
+ if(dx||dy){let l=Math.hypot(dx,dy);dx/=l;dy/=l;if(Math.abs(dx)>Math.abs(dy)){player.dir=Math.sign(dx);player.faceY=0;}else{player.faceY=Math.sign(dy);player.dir=0;}moveEntity(player,dx*player.speed*60*dt,dy*player.speed*60*dt);player.walk+=dt*10;}else player.walk=0;
+ player.attackT=Math.max(0,player.attackT-dt);attackCooldown=Math.max(0,attackCooldown-dt);skillCooldown=Math.max(0,skillCooldown-dt);castTime=Math.max(0,castTime-dt);player.invuln=Math.max(0,player.invuln-dt);player.flash=Math.max(0,player.flash-dt);player.castGlow=Math.max(0,player.castGlow-dt);player.mp=Math.min(player.maxMp,player.mp+dt*1.8);
+ for(const e of enemies){if(e.dead){e.respawn-=dt;if(e.respawn<=0){e.dead=false;e.hp=e.maxHp;e.x=Math.max(35,Math.min(world.w-35,e.px+(Math.random()-.5)*50));e.y=Math.max(35,Math.min(world.h-35,e.py+(Math.random()-.5)*50));}continue;}e.hit=Math.max(0,e.hit-dt);e.attack=Math.max(0,e.attack-dt);e.windup=Math.max(0,e.windup-dt);let d=Math.hypot(player.x-e.x,player.y-e.y);if(d<155){e.alert=true;if(d>22){let vx=(player.x-e.x)/(d||1),vy=(player.y-e.y)/(d||1),wob=Math.sin(gameTime*3+e.phase)*.22;let nx=e.x+(vx-vy*wob)*e.speed*60*dt,ny=e.y+(vy+vx*wob)*e.speed*60*dt;if(!blocked(nx,ny)){e.x=nx;e.y=ny;}}else if(e.attack<=0&&player.invuln<=0){e.windup=.28;e.attack=.9;setTimeout(()=>{if(!e.dead&&Math.hypot(player.x-e.x,player.y-e.y)<30&&player.invuln<=0){player.hp-=Math.max(2,e.atk-player.def*.4);player.invuln=.6;player.flash=.2;shake=.08;particle(player.x,player.y,'#ff777d',7,.35,2,3);if(player.hp<=0){player.hp=player.maxHp;player.x=160;player.y=250;gold=Math.max(0,gold-5);say('You were rescued! Lost 5 gold.');}updateUI();}} ,280);}}
  }
- // moving projectile particles
- for(let i=particles.length-1;i>=0;i--){let p=particles[i];if(p.bolt){p.x+=p.vx;p.y+=p.vy;p.traveled=(p.traveled||0)+Math.hypot(p.vx,p.vy);let target=null,bd=18;for(const e of enemies){if(!e.dead){let d=Math.hypot(e.x-p.x,e.y-p.y);if(d<bd){target=e;bd=d;}}}if(target){damageEnemy(target,p.damage||player.atk+8,4);p.life=0;}if(p.traveled>(p.range||155)||p.x<0||p.y<0||p.x>world.w||p.y>world.h)p.life=0;}else{p.x+=p.vx;p.y+=p.vy;p.vx*=.96;p.vy*=.96;}p.life-=dt;if(p.life<=0)particles.splice(i,1);}
- for(let i=floaters.length-1;i>=0;i--){floaters[i].y-=dt*18;floaters[i].life-=dt;if(floaters[i].life<=0)floaters.splice(i,1);}
- for(let i=drops.length-1;i>=0;i--){drops[i].life-=dt;if(drops[i].life<=0)drops.splice(i,1);}
- shake=Math.max(0,shake-dt);if(Math.random()<.04)updateUI();
- const near=npcs.some(n=>Math.hypot(n.x-player.x,n.y-player.y)<38);$('interactHint').style.display=near?'block':'none';
+ for(let i=particles.length-1;i>=0;i--){let p=particles[i];if(p.bolt){p.x+=p.vx;p.y+=p.vy;p.range=(p.range??150)-Math.hypot(p.vx,p.vy);for(const e of enemies){if(!e.dead&&Math.hypot(p.x-e.x,p.y-e.y)<13){damageEnemy(e,p.damage||12);p.life=0;particle(e.x,e.y,p.color,10,.5,2.5,3);break;}}if(p.range<=0)p.life=0;}else{p.x+=p.vx;p.y+=p.vy;p.vx*=.98;p.vy*=.98;}p.life-=dt;if(p.life<=0)particles.splice(i,1);}
+ autosave+=dt;if(autosave>12){autosave=0;saveGame();}updateUI();
 }
-function frame(t){let dt=Math.min(.033,(t-last)/1000||0);last=t;update(dt);render();requestAnimationFrame(frame);}
-document.querySelectorAll('[data-class]').forEach(b=>b.addEventListener('click',()=>startGame(b.dataset.class)));
-$('invBtn').onclick=()=>openMenu('inventory');$('questBtn').onclick=()=>openMenu('quest');$('helpBtn').onclick=()=>openMenu('help');
-$('closeMenu').onclick=closeMenu;$('saveBtn').onclick=saveGame;$('resetBtn').onclick=resetGame;
-window.addEventListener('keydown',e=>{let k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();keys[e.key]=true;keys[k]=true;if(e.repeat)return;
- if(k===' '||k==='j'){}if(k===' '){attack();}if(k==='q'){special();}if(k==='e'||k==='enter'){interact();}if(k==='i'){openMenu('inventory');}if(k==='j'){openMenu('quest');}if(k==='h'){usePotion();}if(k==='escape'){if(menuOpen)closeMenu();else if(started)paused=!paused;}});
-window.addEventListener('keyup',e=>{keys[e.key]=false;keys[e.key.toLowerCase()]=false;});
-document.querySelectorAll('[data-move]').forEach(b=>{const k=b.dataset.move;const on=e=>{e.preventDefault();touch[k]=true;};const off=e=>{e.preventDefault();touch[k]=false;};b.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,off));});
-document.querySelectorAll('[data-action]').forEach(b=>{const act=b.dataset.action;b.addEventListener('pointerdown',e=>{e.preventDefault();if(act==='attack')attack();if(act==='special')special();if(act==='interact')interact();if(act==='inventory')openMenu('inventory');if(act==='quest')openMenu('quest');if(act==='use')usePotion();});});
-canvas.addEventListener('pointerdown',e=>{if(!started||paused||menuOpen)return;const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;const px=player.x-clamp(player.x-W/2,0,world.w-W),py=player.y-clamp(player.y-H/2,0,world.h-H);if(Math.hypot(x-px,y-py)<50)attack();else{player.dir=Math.abs(x-px)>Math.abs(y-py)?Math.sign(x-px):player.dir;player.faceY=Math.abs(y-py)>Math.abs(x-px)?Math.sign(y-py):player.faceY;attack();}});
-window.addEventListener('blur',()=>{for(const k in keys)keys[k]=false;Object.keys(touch).forEach(k=>touch[k]=false);});
-if(!loadGame()){$('startOverlay').style.display='flex';}
-requestAnimationFrame(frame);
+function frame(ts){let dt=Math.min(.033,(ts-last)/1000||0);last=ts;update(dt);render();requestAnimationFrame(frame);}
+function openPanel(title,body){menu=true;$('overlay').style.display='flex';$('overlay').innerHTML='<div class="card"><h2>'+title+'</h2>'+body+'<div class="row" style="margin-top:12px"><button id="closePanel" class="primary">BACK TO GAME</button><button id="savePanel">SAVE</button></div></div>';$('closePanel').onclick=()=>{$('overlay').style.display='none';menu=false;};$('savePanel').onclick=()=>{saveGame();say('Game saved.');};}
+function action(a){if(a==='attack')attack();if(a==='special')useSkill();if(a==='potion')potion();if(a==='talk')talk();if(a==='save'){saveGame();say('Game saved.');}if(a==='help')openPanel('CONTROLS','<p>Move with WASD / arrows or the left D-pad. Attack with Space, cast your class skill with E, talk with F, potion with Q, inventory with I, quest log with J.</p><p>Watch enemy wind-up flashes and time your attacks. Skills have a cast time, mana cost, and cooldown. Find Elder Rowan to begin your first quest.</p>');if(a==='bag')openPanel('INVENTORY','<p>🧪 Potions: '+(items.Potion||0)+'<br>✦ Glow-shards: '+(items['Glow-shard']||0)+'<br>Gold: '+gold+'</p><p>Potions restore health and mana. Glow-shards are found from enemies.</p>');if(a==='quest')openPanel('QUEST JOURNAL','<p><b>A Light in the Dark</b><br>'+(quest.step===0?'Speak with Elder Rowan in the village.':quest.step===1?'Defeat slimes: '+Math.min(quest.kills,3)+'/3.': 'Quest complete! Explore the woods and ruins.')+'</p><p>Explore for different enemy types and collect glow-shards.</p>');}
+document.querySelectorAll('[data-class]').forEach(b=>b.onclick=()=>start(b.dataset.class));$('newgame').onclick=()=>{localStorage.removeItem('emberfall-save');$('overlay').innerHTML='<div class="card"><h1>Choose your class</h1><p>Your journey begins in Greenwold.</p><div class="classes"><button data-class="Warrior">🛡<strong>WARRIOR</strong><span>Cleave</span></button><button data-class="Mage">🔮<strong>MAGE</strong><span>Arc Bolt</span></button><button data-class="Ranger">🏹<strong>RANGER</strong><span>Piercing Shot</span></button><button data-class="Assassin">🌑<strong>ASSASSIN</strong><span>Shadow Dash</span></button><button data-class="Paladin">✨<strong>PALADIN</strong><span>Radiant Heal</span></button></div></div>';document.querySelectorAll('[data-class]').forEach(x=>x.onclick=()=>start(x.dataset.class));};$('continue').onclick=()=>{if(loadGame()){started=true;menu=false;initWorld();$('overlay').style.display='none';updateUI();say('Welcome back, adventurer!');}else say('No saved adventure found. Choose a class to begin.');};
+document.querySelectorAll('[data-a]').forEach(b=>b.addEventListener('click',()=>action(b.dataset.a)));
+document.querySelectorAll('[data-m]').forEach(b=>{const d=b.dataset.m;const on=e=>{e.preventDefault();touch[d]=true;};const off=e=>{e.preventDefault();touch[d]=false;};b.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,off));});
+window.addEventListener('keydown',e=>{keys[e.key]=true;keys[e.key.toLowerCase()]=true;if([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))e.preventDefault();if(e.repeat)return;if(e.key===' '||e.key==='Spacebar')attack();if(e.key.toLowerCase()==='e')useSkill();if(e.key.toLowerCase()==='f')talk();if(e.key.toLowerCase()==='q')potion();if(e.key.toLowerCase()==='i')action('bag');if(e.key.toLowerCase()==='j')action('quest');if(e.key==='Escape'&&menu){menu=false;$('overlay').style.display='none';}});window.addEventListener('keyup',e=>{keys[e.key]=false;keys[e.key.toLowerCase()]=false;});window.addEventListener('blur',()=>{keys={};touch={up:false,down:false,left:false,right:false};});
+initWorld();updateUI();requestAnimationFrame(frame);
 })();
-</script>
-</body></html>
+</script></body></html>
